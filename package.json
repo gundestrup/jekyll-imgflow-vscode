@@ -1,0 +1,85 @@
+{
+  "name": "jekyll-imgflow",
+  "displayName": "Jekyll ImgFlow",
+  "description": "Image filename autocomplete for the jekyll-imgflow Liquid tag",
+  "version": "0.1.0",
+  "publisher": "gundestrup",
+  "license": "AGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gundestrup/jekyll-imgflow-vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/gundestrup/jekyll-imgflow-vscode/issues"
+  },
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "jekyll",
+    "imgflow",
+    "liquid",
+    "images",
+    "autocomplete"
+  ],
+  "activationEvents": [
+    "onLanguage:markdown",
+    "onLanguage:liquid",
+    "workspaceContains:**/_config.yml"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Jekyll ImgFlow",
+      "properties": {
+        "jekyllImgFlow.originals": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "default": null,
+          "description": "Path (or array of paths) to the image originals directory. Auto-detected from _config.yml when unset."
+        },
+        "jekyllImgFlow.formats": {
+          "type": "array",
+          "default": [
+            "jpg",
+            "jpeg",
+            "png",
+            "gif",
+            "webp",
+            "avif",
+            "tiff",
+            "svg"
+          ],
+          "description": "File extensions to include in image completions"
+        }
+      }
+    },
+    "languages": [
+      {
+        "id": "liquid",
+        "extensions": [
+          ".liquid"
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "tsc --noEmit",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.74.0",
+    "js-yaml": "^4.1.0",
+    "typescript": "^5.7.0"
+  }
+}
