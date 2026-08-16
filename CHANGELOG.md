@@ -1,6 +1,11 @@
 # Changelog
 
 
+## [Unreleased]
+
+### Added
+- README badges for VS Code Marketplace
+
 ## [0.1.0] - 2026-08-16
 
 ### Added
