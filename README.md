@@ -5,6 +5,7 @@
 [![Version](https://img.shields.io/open-vsx/v/gundestrup/jekyll-imgflow)](https://open-vsx.org/extension/gundestrup/jekyll-imgflow)
 [![Installs](https://img.shields.io/open-vsx/dt/gundestrup/jekyll-imgflow)](https://open-vsx.org/extension/gundestrup/jekyll-imgflow)
 [![License](https://img.shields.io/github/license/gundestrup/jekyll-imgflow-vscode)](LICENSE)
+[![DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/gundestrup/jekyll-imgflow-vscode)
 
 A Visual Studio Code companion for [jekyll-imgflow](https://github.com/gundestrup/jekyll-imgflow). It provides image filename autocomplete inside `{% imgflow %}` Liquid tags in Markdown and Liquid files.
 
