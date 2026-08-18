@@ -62,27 +62,20 @@ The extension is published to Open VSX, not the VS Code Marketplace.
    npm run package
    ```
 
-4. Bump version, commit, and tag in one step:
+4. Bump the version, commit, and tag in one step:
 
    ```bash
-   npm version patch -m "Release v<version>"
+   npm version patch -m "Release v%s"
    ```
 
    Use `npm version minor` or `npm version major` for larger changes.
 
-5. Push:
+5. Push the commit and tag:
 
    ```bash
-   git push origin main --tags
+   git push origin main --follow-tags
    ```
 
-6. Create a GitHub release from the tag, attaching the VSIX:
-
-   ```bash
-   gh release create v<version> --title "Jekyll ImgFlow <version>" \
-     --generate-notes jekyll-imgflow-<version>.vsix
-   ```
-
-The GitHub release triggers `.github/workflows/publish.yml`, which runs integration tests and publishes to Open VSX. The workflow needs an `OVSX_PAT` repository secret.
+Pushing a `v*` tag triggers `.github/workflows/publish.yml`. It runs integration tests, verifies and packages the extension, creates the GitHub release, and publishes to Open VSX. No manual GitHub release or VSIX attachment is needed. The workflow needs an `OVSX_PAT` repository secret.
 
 Open VSX versions cannot be overwritten. Each release needs a new version number.
