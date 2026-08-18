@@ -5,13 +5,25 @@ import { ImgflowCompletionProvider } from "./completionProvider";
 const IMG_TAG_PATTERN = /\{%\s*imgflow\s/;
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
+  console.log("[Jekyll ImgFlow] activate() started");
+
   const workspaceRoot = getWorkspaceRoot();
   if (!workspaceRoot) {
+    vscode.window.showErrorMessage("Jekyll ImgFlow: no workspace folder open.");
+    console.log("[Jekyll ImgFlow] no workspace folder");
     return;
   }
 
+  console.log(`[Jekyll ImgFlow] workspace root: ${workspaceRoot}`);
+
   const index = new ImageIndex(workspaceRoot);
-  await index.refresh();
+  try {
+    await index.refresh();
+    console.log(`[Jekyll ImgFlow] indexed ${index.getImages().length} images`);
+  } catch (error) {
+    console.error("[Jekyll ImgFlow] refresh failed:", error);
+    vscode.window.showErrorMessage(`Jekyll ImgFlow refresh failed: ${error}`);
+  }
   index.registerWatchers(context);
 
   const provider = new ImgflowCompletionProvider(index);
@@ -35,7 +47,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
     "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
     "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-    ".", "-", "_", "/",
+    ".", "-", "_", "/", "\"", "'", ",", ":",
   ];
 
   for (const char of triggerChars) {

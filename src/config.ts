@@ -28,7 +28,19 @@ export function parseImgflowConfig(content: string): ImgflowConfig {
   };
 }
 
-export function loadImgflowConfig(workspaceRoot: string): ImgflowConfig | null {
+export function loadImgflowConfig(
+  workspaceRoot: string,
+  vscodeOriginals?: string | string[] | undefined
+): ImgflowConfig {
+  const fileConfig = loadImgflowConfigFile(workspaceRoot);
+  const originals = vscodeOriginals === undefined || vscodeOriginals === ""
+    ? (fileConfig?.originals ?? [DEFAULT_ORIGINALS])
+    : normalizeOriginals(vscodeOriginals);
+
+  return { originals };
+}
+
+function loadImgflowConfigFile(workspaceRoot: string): ImgflowConfig | null {
   const configPath = path.join(workspaceRoot, "_config.yml");
   if (!fs.existsSync(configPath)) {
     return null;
@@ -42,7 +54,11 @@ export function loadImgflowConfig(workspaceRoot: string): ImgflowConfig | null {
   }
 }
 
-export function loadAllowedExtensions(): string[] {
-  const config = undefined; // Reserved for future VS Code settings integration
-  return config as unknown as string[] | undefined ?? DEFAULT_EXTENSIONS;
+export function loadAllowedExtensions(
+  vscodeFormats?: string[] | undefined
+): string[] {
+  if (vscodeFormats && vscodeFormats.length > 0) {
+    return vscodeFormats;
+  }
+  return DEFAULT_EXTENSIONS;
 }

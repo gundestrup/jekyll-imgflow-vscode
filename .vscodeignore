@@ -1,7 +1,9 @@
 .gitignore
 .vscode/
 .vscode-test/
-node_modules/
+node_modules/**
+!node_modules/js-yaml/**
+!node_modules/argparse/**
 out/**/*.map
 src/
 tsconfig.json

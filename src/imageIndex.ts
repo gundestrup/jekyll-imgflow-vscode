@@ -11,13 +11,20 @@ export class ImageIndex {
   constructor(private readonly workspaceRoot: string) {}
 
   async refresh(): Promise<void> {
-    this.config = loadImgflowConfig(this.workspaceRoot);
+    const vscodeConfig = vscode.workspace.getConfiguration("jekyllImgFlow");
+    const originals = vscodeConfig.get<string | string[] | undefined>("originals");
+    const formats = vscodeConfig.get<string[] | undefined>("formats");
+
+    console.log(`[Jekyll ImgFlow] VS Code settings: originals=${JSON.stringify(originals)}, formats=${JSON.stringify(formats)}`);
+
+    this.config = loadImgflowConfig(this.workspaceRoot, originals);
+    console.log(`[Jekyll ImgFlow] resolved originals: ${JSON.stringify(this.config?.originals)}`);
     if (!this.config) {
       this.images = [];
       return;
     }
 
-    const extensions = new Set(loadAllowedExtensions().map((ext) => (ext.startsWith(".") ? ext : `.${ext}`)));
+    const extensions = new Set(loadAllowedExtensions(formats).map((ext) => (ext.startsWith(".") ? ext : `.${ext}`)));
     const results: string[] = [];
 
     for (const relative of this.config.originals) {
@@ -44,7 +51,9 @@ export class ImageIndex {
   }
 
   registerWatchers(context: vscode.ExtensionContext): void {
-    const config = loadImgflowConfig(this.workspaceRoot);
+    const vscodeConfig = vscode.workspace.getConfiguration("jekyllImgFlow");
+    const originals = vscodeConfig.get<string | string[] | undefined>("originals");
+    const config = loadImgflowConfig(this.workspaceRoot, originals);
     if (!config) {
       return;
     }

@@ -6,6 +6,15 @@
 ### Added
 - README badges for VS Code Marketplace
 
+## [0.1.1] - 2026-08-18
+
+### Added
+- Selecting an image from the completion list now closes the opening quote
+- Parameter and preset completions after the image path (width, format, quality, preset, etc.)
+
+### Fixed
+- Bundle `js-yaml` and `argparse` so the extension activates without a missing module error
+
 ## [0.1.0] - 2026-08-16
 
 ### Added
