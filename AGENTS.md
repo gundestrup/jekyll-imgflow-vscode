@@ -16,7 +16,7 @@
 ## Release and Publish
 
 - The project targets the **Open VSX** registry, not the VS Code: Marketplace.
-- Release a new version by updating `package.json` and `package-lock.json` with npm, updating `CHANGELOG.md` and `README.md` (if needed), running verification, committing, pushing, and creating a matching GitHub release.
+- Release a new version by first staging all changes and committing them, then running `npm version patch -m "Release v<version>"` which atomically bumps `package.json` and `package-lock.json`, creates a release commit, and tags it. Update `CHANGELOG.md` (move entries from `[Unreleased]` to a new versioned section) before the staging commit. Run `npm run verify` and `npm run test:integration` before committing. Push with `git push origin main --tags`, then create a GitHub release from the tag.
 - Pull requests and pushes to `main` run `.github/workflows/ci.yml`, which verifies source quality, runs unit tests, audits dependencies, packages the extension, and runs VS Code integration tests against the minimum and current stable VS Code versions.
 - Dependabot checks npm and GitHub Actions dependencies weekly via `.github/dependabot.yml`.
 - Creating a GitHub release triggers `.github/workflows/publish.yml`, which repeats verification, packages, and publishes to Open VSX.
