@@ -1,5 +1,7 @@
 # Jekyll ImgFlow — VS Code companion
 
+![Jekyll ImgFlow logo](images/logo.png)
+
 [![Version](https://img.shields.io/visual-studio-marketplace/v/gundestrup.jekyll-imgflow)](https://marketplace.visualstudio.com/items?itemName=gundestrup.jekyll-imgflow)
 [![Installs](https://img.shields.io/visual-studio-marketplace/i/gundestrup.jekyll-imgflow)](https://marketplace.visualstudio.com/items?itemName=gundestrup.jekyll-imgflow)
 [![License](https://img.shields.io/github/license/gundestrup/jekyll-imgflow-vscode)](LICENSE)
