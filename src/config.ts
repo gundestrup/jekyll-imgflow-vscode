@@ -49,7 +49,7 @@ function loadImgflowConfigFile(workspaceRoot: string): ImgflowConfig | null {
   try {
     const content = fs.readFileSync(configPath, "utf8");
     return parseImgflowConfig(content);
-  } catch (error) {
+  } catch {
     return null;
   }
 }

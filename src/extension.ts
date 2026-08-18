@@ -28,36 +28,28 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   const provider = new ImgflowCompletionProvider(index);
 
-  const markdownProvider = vscode.languages.registerCompletionItemProvider(
-    { language: "markdown" },
-    provider,
-    " "
-  );
-
-  const liquidProvider = vscode.languages.registerCompletionItemProvider(
-    { language: "liquid", scheme: "file" },
-    provider,
-    " "
-  );
-
-  context.subscriptions.push(markdownProvider, liquidProvider);
-
   // Also trigger on common image-name characters so the list refines as the user types
   const triggerChars = [
+    " ",
     "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
     "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
     "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
     ".", "-", "_", "/", "\"", "'", ",", ":",
   ];
 
-  for (const char of triggerChars) {
-    context.subscriptions.push(
-      vscode.languages.registerCompletionItemProvider({ language: "markdown" }, provider, char)
-    );
-    context.subscriptions.push(
-      vscode.languages.registerCompletionItemProvider({ language: "liquid", scheme: "file" }, provider, char)
-    );
-  }
+  const markdownProvider = vscode.languages.registerCompletionItemProvider(
+    { language: "markdown" },
+    provider,
+    ...triggerChars
+  );
+
+  const liquidProvider = vscode.languages.registerCompletionItemProvider(
+    { language: "liquid", scheme: "file" },
+    provider,
+    ...triggerChars
+  );
+
+  context.subscriptions.push(markdownProvider, liquidProvider);
 
   // Optional: show a status item when inside an imgflow tag
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
@@ -66,7 +58,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   status.command = undefined;
   context.subscriptions.push(status);
 
-  vscode.window.onDidChangeTextEditorSelection((event) => {
+  const selectionListener = vscode.window.onDidChangeTextEditorSelection((event) => {
     if (!event.textEditor) {
       status.hide();
       return;
@@ -77,6 +69,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     status.text = IMG_TAG_PATTERN.test(line) ? "$(sync~spin) ImgFlow ready" : "ImgFlow";
     status.show();
   });
+  context.subscriptions.push(selectionListener);
 }
 
 export function deactivate(): void {

@@ -4,14 +4,22 @@
 
 - Compile TypeScript: `npm run compile`
 - Watch builds: `npm run watch`
-- Lint/typecheck: `npm run lint` (`tsc --noEmit`)
-- Produce VSIX: `npm run package` (runs `vsce package`)
+- Lint and typecheck: `npm run lint` (compile plus ESLint)
+- Typecheck only: `npm run lint:types`
+- ESLint only: `npm run lint:eslint`
+- Unit tests: `npm test` (Vitest)
+- Integration tests: `npm run test:integration` (VS Code Extension Development Host via `@vscode/test-electron`)
+- Dependency audit: `npm run audit` (fails on high or critical advisories)
+- Full pre-release verification: `npm run verify` (lint plus dependency audit)
+- Produce VSIX: `npm run package` (generates a sanitized README, compiles, then runs `vsce package`)
 
 ## Release and Publish
 
 - The project targets the **Open VSX** registry, not the VS Code: Marketplace.
-- Release a new version by bumping `package.json`, updating `CHANGELOG.md` and `README.md` (if needed), committing, and creating a GitHub release.
-- Creating a GitHub release triggers `.github/workflows/publish.yml`, which packages and publishes to Open VSX.
+- Release a new version by updating `package.json` and `package-lock.json` with npm, updating `CHANGELOG.md` and `README.md` (if needed), running verification, committing, pushing, and creating a matching GitHub release.
+- Pull requests and pushes to `main` run `.github/workflows/ci.yml`, which verifies source quality, runs unit tests, audits dependencies, packages the extension, and runs VS Code integration tests against the minimum and current stable VS Code versions.
+- Dependabot checks npm and GitHub Actions dependencies weekly via `.github/dependabot.yml`.
+- Creating a GitHub release triggers `.github/workflows/publish.yml`, which repeats verification, packages, and publishes to Open VSX.
 - The workflow expects a GitHub repository secret named `OVSX_PAT`.
 - Open VSX does not allow overwriting published versions; each release needs a new version number.
 
@@ -31,5 +39,11 @@
 
 ## Notes
 
+- CI uses the current Node.js 26 release with `actions/setup-node@v6`; local development should use Node.js 26 as well.
+- `npm run lint` runs both TypeScript compilation and ESLint; `npm run lint:types` runs the TypeScript check alone.
 - `package-lock.json` is not typically included in the VSIX; `node_modules` is bundled because the extension needs `js-yaml`.
 - `.github/` and other development files are excluded from the VSIX by `.vscodeignore`.
+- `README.md` retains the official DeepWiki SVG badge for automatic refresh. `npm run package` generates a sanitized README under `.vsix-readme/` because `vsce` rejects SVG URLs in packaged READMEs.
+- `scripts/prepare-vsix-readme.mjs` is the single packaging transformation; do not maintain a second committed README.
+- Always use best practices and, when possible, the newest stable version of dependencies.
+- Avoid floating/unpinned versions (`latest`, `*`) for CI and new package installs; prefer versions that are at least a week old to avoid freshly-published, unvetted releases.

@@ -2,6 +2,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import * as vscode from "vscode";
 import { loadAllowedExtensions, loadImgflowConfig, type ImgflowConfig } from "./config";
+import { collectImageFiles } from "./imageFiles";
 
 export class ImageIndex {
   private images: string[] = [];
@@ -33,7 +34,7 @@ export class ImageIndex {
         continue;
       }
 
-      const files = this.collectFiles(dir, extensions);
+      const files = collectImageFiles(dir, extensions);
       for (const file of files) {
         results.push(path.relative(dir, file).replace(/\\/g, "/"));
       }
@@ -63,9 +64,9 @@ export class ImageIndex {
       const pattern = new vscode.RelativePattern(dir, "**/*");
       const watcher = vscode.workspace.createFileSystemWatcher(pattern, false, false, false);
 
-      watcher.onDidChange(() => this.refresh());
-      watcher.onDidCreate(() => this.refresh());
-      watcher.onDidDelete(() => this.refresh());
+      watcher.onDidChange(() => this.refreshFromWatcher());
+      watcher.onDidCreate(() => this.refreshFromWatcher());
+      watcher.onDidDelete(() => this.refreshFromWatcher());
 
       this.watchers.push(watcher);
       context.subscriptions.push(watcher);
@@ -79,19 +80,11 @@ export class ImageIndex {
     this.watchers.length = 0;
   }
 
-  private collectFiles(dir: string, extensions: Set<string>): string[] {
-    const results: string[] = [];
-
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        results.push(...this.collectFiles(fullPath, extensions));
-      } else if (entry.isFile() && extensions.has(path.extname(entry.name).toLowerCase())) {
-        results.push(fullPath);
-      }
-    }
-
-    return results;
+  private refreshFromWatcher(): void {
+    void this.refresh().catch((error: unknown) => {
+      console.error("[Jekyll ImgFlow] watcher refresh failed:", error);
+    });
   }
+
+
 }

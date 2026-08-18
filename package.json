@@ -15,7 +15,7 @@
     "url": "https://github.com/gundestrup/jekyll-imgflow-vscode/issues"
   },
   "engines": {
-    "vscode": "^1.75.0"
+    "vscode": "^1.91.0"
   },
   "categories": [
     "Other"
@@ -75,17 +75,34 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "lint": "tsc --noEmit",
-    "package": "vsce package"
+    "lint": "npm run compile && npm run lint:eslint",
+    "lint:types": "tsc --noEmit",
+    "lint:eslint": "eslint src",
+    "test": "vitest run",
+    "test:integration": "npm run compile && tsc -p tsconfig.test.json && node out/test/run-integration.js",
+    "audit": "npm audit --audit-level=high",
+    "verify": "npm run lint && npm run test && npm run audit",
+    "prepare:vsix-readme": "node scripts/prepare-vsix-readme.mjs",
+    "package": "npm run prepare:vsix-readme && vsce package --readme-path .vsix-readme/README.md"
   },
   "dependencies": {
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.3.0"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "^20.0.0",
-    "@types/vscode": "^1.75.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^26.x",
+    "@types/vscode": "^1.91.0",
+    "@vscode/test-electron": "^3.1.0",
     "@vscode/vsce": "^3.9.2",
-    "typescript": "^5.7.0"
+    "eslint": "^9.0.0",
+    "mocha": "^11.3.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.64.0",
+    "vitest": "^4.1.10"
+  },
+  "overrides": {
+    "serialize-javascript": "^7.1.0",
+    "diff": "^9.0.0"
   }
 }

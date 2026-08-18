@@ -1,7 +1,8 @@
 out/
 dist/
+.vsix-readme/
+.vscode-test/
 node_modules/
 *.vsix
 *.log
 .DS_Store
-.vscode-test/
