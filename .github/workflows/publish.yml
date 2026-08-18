@@ -28,7 +28,7 @@ jobs:
       - name: Run VS Code integration tests
         env:
           VSCODE_VERSION: ${{ matrix.vscode-version }}
-        run: npm run test:integration
+        run: xvfb-run -a npm run test:integration
 
   publish:
     needs: integration
