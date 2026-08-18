@@ -2,10 +2,11 @@
   "name": "jekyll-imgflow",
   "displayName": "Jekyll ImgFlow",
   "description": "Image filename autocomplete for the jekyll-imgflow Liquid tag",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "gundestrup",
   "license": "AGPL-3.0-or-later",
   "icon": "images/icon.png",
+  "homepage": "https://open-vsx.org/extension/gundestrup/jekyll-imgflow",
   "repository": {
     "type": "git",
     "url": "https://github.com/gundestrup/jekyll-imgflow-vscode"

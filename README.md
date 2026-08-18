@@ -2,11 +2,19 @@
 
 ![Jekyll ImgFlow logo](images/logo.png)
 
-[![Version](https://img.shields.io/visual-studio-marketplace/v/gundestrup.jekyll-imgflow)](https://marketplace.visualstudio.com/items?itemName=gundestrup.jekyll-imgflow)
-[![Installs](https://img.shields.io/visual-studio-marketplace/i/gundestrup.jekyll-imgflow)](https://marketplace.visualstudio.com/items?itemName=gundestrup.jekyll-imgflow)
+[![Version](https://img.shields.io/open-vsx/v/gundestrup/jekyll-imgflow)](https://open-vsx.org/extension/gundestrup/jekyll-imgflow)
+[![Installs](https://img.shields.io/open-vsx/dt/gundestrup/jekyll-imgflow)](https://open-vsx.org/extension/gundestrup/jekyll-imgflow)
 [![License](https://img.shields.io/github/license/gundestrup/jekyll-imgflow-vscode)](LICENSE)
 
 A Visual Studio Code companion for [jekyll-imgflow](https://github.com/gundestrup/jekyll-imgflow). It provides image filename autocomplete inside `{% imgflow %}` Liquid tags in Markdown and Liquid files.
+
+## Installation
+
+Install from [Open VSX](https://open-vsx.org/extension/gundestrup/jekyll-imgflow) (for [VSCodium](https://vscodium.com/) or any Open VSX-compatible editor) or download the latest `.vsix` from [GitHub Releases](https://github.com/gundestrup/jekyll-imgflow-vscode/releases) and run:
+
+```bash
+code: --install-extension jekyll-imgflow-0.1.2.vsix
+```
 
 ## Features
 

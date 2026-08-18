@@ -3,8 +3,15 @@
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-08-18
+
 ### Added
-- README badges for VS Code Marketplace
+- Extension icon and README logo
+- README badges for Open VSX
+- Open VSX publishing workflow and package homepage
+
+### Changed
+- Pointed installation and documentation to Open VSX registry
 
 ## [0.1.1] - 2026-08-18
 
