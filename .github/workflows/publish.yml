@@ -67,5 +67,14 @@ jobs:
               --generate-notes
           fi
 
+      - name: Verify CHANGELOG has an entry for this version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          if ! grep -q "## \[${VERSION}\]" CHANGELOG.md; then
+            echo "❌ CHANGELOG.md has no '## [${VERSION}]' entry"
+            exit 1
+          fi
+          echo "✅ CHANGELOG.md has an entry for version ${VERSION}"
+
       - name: Publish to Open VSX
         run: npx ovsx@1.1.1 publish jekyll-imgflow-*.vsix -p ${{ secrets.OVSX_PAT }}

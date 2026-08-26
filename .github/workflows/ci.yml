@@ -28,6 +28,10 @@ jobs:
       - name: Verify source and dependencies
         run: npm run verify
 
+      - name: Check for outdated npm packages
+        run: npm outdated || true
+        continue-on-error: true
+
       - name: Package extension
         run: npm run package
 
