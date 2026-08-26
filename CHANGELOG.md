@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Added
+- CHANGELOG gate in publish workflow — fails if `CHANGELOG.md` has no `## [<version>]` entry for the tagged version
+- `npm outdated` as a non-blocking CI step to surface outdated dependencies
+
+### Changed
+- Aligned AGENTS.md header to the open convention with "Single source of truth" note
+
 ## [0.1.3] - 2026-08-18
 
 ### Added
