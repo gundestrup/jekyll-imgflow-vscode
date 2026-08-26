@@ -1,4 +1,6 @@
-# AI / Agent Notes for Jekyll ImgFlow VS Code: Extension
+# AGENTS.md — jekyll-imgflow-vscode
+
+> **Single source of truth for all coding agents working on this project.**
 
 ## Build and Package
 
