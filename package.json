@@ -97,7 +97,7 @@
     "@vscode/vsce": "^3.9.2",
     "eslint": "^10.9.1",
     "mocha": "^11.3.0",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "typescript-eslint": "^8.68.0",
     "vitest": "^4.1.11"
   },
