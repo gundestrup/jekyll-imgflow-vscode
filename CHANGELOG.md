@@ -2,12 +2,23 @@
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-09-03
+
 ### Added
+
 - CHANGELOG gate in publish workflow — fails if `CHANGELOG.md` has no `## [<version>]` entry for the tagged version
 - `npm outdated` as a non-blocking CI step to surface outdated dependencies
 
 ### Changed
+
 - Aligned AGENTS.md header to the open convention with "Single source of truth" note
+- Updated `js-yaml` to 5.4.1, ESLint to 10.9.1, `typescript-eslint` to 8.68.0, and transitive dependencies `fast-uri` to 3.1.7 and `qs` to 6.16.0
+- Updated GitHub Actions to `actions/checkout@v7` and `actions/setup-node@v7`
+- Pinned `@types/vscode` to 1.91.0 to match the minimum supported VS Code API
+
+### Fixed
+
+- Resolved high-severity `fast-uri` and moderate-severity `qs` dependency advisories
 
 ## [0.1.3] - 2026-08-18
 

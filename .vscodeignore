@@ -4,6 +4,7 @@ AGENTS.md
 README.md
 README.devel.md
 README.vsix.md
+readme.todo.md
 .vsix-readme/
 eslint.config.mjs
 .eslint*
