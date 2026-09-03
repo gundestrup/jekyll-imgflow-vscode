@@ -103,6 +103,7 @@
   },
   "overrides": {
     "serialize-javascript": "^7.1.0",
-    "diff": "^9.0.0"
+    "diff": "^9.0.0",
+    "qs": "^6.16.0"
   }
 }
