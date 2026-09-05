@@ -4,6 +4,10 @@
 
 ## [0.2.0] - 2026-09-05
 
+### Notes
+
+- Version 0.1.4 was never published to Open VSX: its publish workflow was cancelled after the `integration (1.91.0)` job exceeded the 6-hour GitHub Actions timeout (the test runner hung after tests passed). The fixes intended for 0.1.4 — the `fast-uri` and `qs` advisory resolutions, the CHANGELOG publish gate, and the `npm outdated` CI step — are all included in this release.
+
 ### Added
 
 - Document title autocomplete for `{% doc_link %}` and category autocomplete for `{% doc_category %}`
