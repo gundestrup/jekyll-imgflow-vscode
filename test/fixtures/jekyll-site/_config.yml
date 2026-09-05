@@ -1,2 +1,11 @@
+plugins:
+  - jekyll-imgflow
+  - jekyll-documents
+
 imgflow:
   originals: assets/images/originals
+documents:
+  root: assets/documents
+  category_map:
+    Board: minutes
+    Annual: yearly

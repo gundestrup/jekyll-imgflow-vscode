@@ -1,7 +1,7 @@
 {
   "name": "jekyll-imgflow",
   "displayName": "Jekyll ImgFlow",
-  "description": "Image filename autocomplete for the jekyll-imgflow Liquid tag",
+  "description": "Autocomplete for jekyll-imgflow images and jekyll-documents references",
   "version": "0.1.4",
   "publisher": "gundestrup",
   "license": "AGPL-3.0-or-later",
@@ -23,6 +23,7 @@
   "keywords": [
     "jekyll",
     "imgflow",
+    "documents",
     "liquid",
     "images",
     "autocomplete"
@@ -75,9 +76,10 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "lint": "npm run compile && npm run lint:eslint",
-    "lint:types": "tsc --noEmit",
-    "lint:eslint": "eslint src",
+    "lint": "npm run compile && npm run lint:tests && npm run lint:eslint",
+    "lint:types": "tsc --noEmit && npm run lint:tests",
+    "lint:tests": "tsc -p test/tsconfig.json",
+    "lint:eslint": "eslint src test",
     "test": "vitest run",
     "test:integration": "npm run compile && tsc -p tsconfig.test.json && node out/test/run-integration.js",
     "audit": "npm audit --audit-level=high",

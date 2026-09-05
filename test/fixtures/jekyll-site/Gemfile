@@ -1,0 +1,4 @@
+source "https://rubygems.org"
+
+gem "jekyll-imgflow", "0.1.10"
+gem "jekyll-documents", "0.7.0"

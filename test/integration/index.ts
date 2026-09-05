@@ -1,4 +1,5 @@
 import * as path from "node:path";
+import { rename, unlink, writeFile } from "node:fs/promises";
 import Mocha from "mocha";
 import * as vscode from "vscode";
 import * as assert from "node:assert";
@@ -55,12 +56,29 @@ async function getCompletions(
   );
 }
 
+async function waitForCompletionState(
+  document: vscode.TextDocument,
+  label: string,
+  expected: boolean
+): Promise<void> {
+  const position = document.positionAt(document.getText().length);
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const completions = await getCompletions(document, position);
+    const present = completions.items.some((item) => item.label.toString() === label);
+    if (present === expected) {
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  throw new Error(`Completion "${label}" did not become ${expected ? "present" : "absent"}`);
+}
+
 export function run(): Promise<void> {
   const mocha = new Mocha({ ui: "tdd", color: true, timeout: 30000 });
 
   mocha.suite.emit("pre-require", global, __filename, mocha);
 
-  suite("Jekyll ImgFlow Integration", () => {
+  suite("Jekyll Autocomplete Integration", () => {
     suiteSetup(async () => {
       await waitForExtension();
     });
@@ -131,17 +149,191 @@ export function run(): Promise<void> {
       );
     });
 
-    test("works in Liquid files", async () => {
-      const document = await openDocument("page.liquid");
-      const position = findPosition(document, "{% imgflow ");
+    test("suggests document titles with metadata after doc_link", async () => {
+      const document = await openDocument("index.md");
+      const position = findPosition(document, "{% doc_link \"Annual");
       const completions = await getCompletions(document, position);
+      const annualReports = completions.items.filter((item) => item.label.toString() === "Annual Report");
 
-      const labels = completions.items.map((item) => item.label);
-      assert.ok(labels.length > 0, "Liquid completion should return at least one item");
+      assert.equal(annualReports.length, 2, "Both documents with duplicate titles should be suggested");
       assert.ok(
-        labels.some((label) => label.toString() === "diagram.webp"),
-        `Completions should include diagram.webp in Liquid files, got: ${labels.join(", ")}`
+        annualReports.every((item) => item.insertText?.toString().startsWith("path:\"")),
+        "Duplicate document titles should insert path references"
       );
+      assert.ok(
+        annualReports.some((item) => item.insertText?.toString().includes("Board/2026-03-01_Annual_Report.pdf")),
+        "Board document path should be available"
+      );
+      assert.ok(
+        annualReports.some((item) => item.insertText?.toString().includes("Reports/2026-03-02_Annual_Report.pdf")),
+        "Reports document path should be available"
+      );
+      assert.ok(
+        annualReports.some((item) => item.detail?.includes("minutes")),
+        "Document details should include mapped categories"
+      );
+    });
+
+    test("suggests mapped document categories after doc_category", async () => {
+      const document = await openDocument("index.md");
+      const position = findPosition(document, "{% doc_category \"mi");
+      const completions = await getCompletions(document, position);
+      const minutes = completions.items.find((item) => item.label.toString() === "minutes");
+
+      assert.ok(minutes, "Mapped minutes category should be suggested");
+      assert.equal(minutes.insertText?.toString(), "minutes\"");
+    });
+
+    test("suggests nested documents using the final mapped category", async () => {
+      const document = await openDocument("index.md");
+      const position = findPosition(document, "{% doc_link \"Year");
+      const completions = await getCompletions(document, position);
+      const accounts = completions.items.find((item) => item.label.toString() === "Year End Accounts");
+
+      assert.ok(accounts, "Nested document should be suggested");
+      assert.equal(accounts.insertText?.toString(), "Year End Accounts\"");
+      assert.ok(accounts.detail?.includes("yearly"), "Detail should include the mapped nested category");
+      assert.ok(accounts.detail?.includes("XLSX"), "Detail should include the file type");
+      assert.equal(
+        accounts.documentation?.toString(),
+        "Archive/Annual/2025-12-15_Year_End_Accounts.xlsx"
+      );
+
+      const categoryPosition = findPosition(document, "{% doc_category \"year");
+      const categoryCompletions = await getCompletions(document, categoryPosition);
+      assert.ok(
+        categoryCompletions.items.some((item) => item.label.toString() === "yearly"),
+        "Nested mapped category should be suggested"
+      );
+    });
+
+    test("suggests doc_link documents from the root and several directories deep", async () => {
+      const document = await openDocument("index.md");
+      const rootPosition = findPosition(document, "{% doc_link \"Root");
+      const rootCompletions = await getCompletions(document, rootPosition);
+      const rootPolicy = rootCompletions.items.find((item) => item.label.toString() === "Root Policy");
+
+      assert.ok(rootPolicy, "Document directly in documents.root should be suggested");
+      assert.ok(rootPolicy.detail?.includes("uncategorized"), "Root document should use uncategorized");
+      assert.equal(rootPolicy.documentation?.toString(), "2026-01-10_Root_Policy.pdf");
+
+      const deepPosition = findPosition(document, "{% doc_link \"Regional");
+      const deepCompletions = await getCompletions(document, deepPosition);
+      const regionalResearch = deepCompletions.items.filter(
+        (item) => item.label.toString() === "Regional Research"
+      );
+
+      assert.equal(regionalResearch.length, 2, "Both repeated Research categories should be suggested");
+      assert.ok(
+        regionalResearch.every((item) => item.insertText?.toString().startsWith("path:\"")),
+        "Repeated document titles should insert path references"
+      );
+      assert.ok(
+        regionalResearch.some((item) => item.documentation?.toString().includes("Departments/Europe/")),
+        "European document path should be shown"
+      );
+      assert.ok(
+        regionalResearch.some((item) => item.documentation?.toString().includes("Departments/America/")),
+        "American document path should be shown"
+      );
+    });
+
+    test("offers multiple category completions and refines the typed prefix", async () => {
+      const document = await openDocument("index.md");
+      const sharedPosition = findPosition(document, "{% doc_category \"re");
+      const sharedCompletions = await getCompletions(document, sharedPosition);
+      const sharedLabels = sharedCompletions.items.map((item) => item.label.toString());
+
+      assert.deepEqual(sharedLabels, ["reports", "research", "research"]);
+      const researchCompletions = sharedCompletions.items.filter(
+        (item) => item.label.toString() === "research"
+      );
+      assert.ok(
+        researchCompletions.every((item) => item.insertText?.toString().startsWith("path:\"")),
+        "Repeated category names should insert category path references"
+      );
+      assert.ok(
+        researchCompletions.some((item) => item.insertText?.toString().includes("Departments/Europe/")),
+        "European category path should be suggested"
+      );
+      assert.ok(
+        researchCompletions.some((item) => item.insertText?.toString().includes("Departments/America/")),
+        "American category path should be suggested"
+      );
+
+      const refinedPosition = findPosition(document, "{% doc_category \"rese");
+      const refinedCompletions = await getCompletions(document, refinedPosition);
+      const refinedLabels = refinedCompletions.items.map((item) => item.label.toString());
+
+      assert.deepEqual(refinedLabels, ["research", "research"]);
+    });
+
+    test("quotes bare doc_link completion values containing spaces", async () => {
+      const document = await openDocument("index.md");
+      const position = findPosition(document, "{% doc_link Board");
+      const completions = await getCompletions(document, position);
+      const minutes = completions.items.find((item) => item.label.toString() === "Board Minutes");
+
+      assert.ok(minutes, "Board Minutes should be suggested for a bare prefix");
+      assert.equal(minutes.insertText?.toString(), "\"Board Minutes\"");
+    });
+
+    test("filters document titles by typed prefix", async () => {
+      const document = await openDocument("index.md");
+      const position = findPosition(document, "{% doc_link \"Year");
+      const completions = await getCompletions(document, position);
+      const labels = completions.items.map((item) => item.label.toString());
+
+      assert.deepEqual(labels, ["Year End Accounts"]);
+    });
+
+    test("refreshes document completions after create, rename, and delete", async () => {
+      const createdFile = path.join(
+        FIXTURE_ROOT,
+        "assets",
+        "documents",
+        "Board",
+        "2026-03-04_Watcher_Created.pdf"
+      );
+      const renamedFile = path.join(
+        FIXTURE_ROOT,
+        "assets",
+        "documents",
+        "Board",
+        "2026-03-04_Watcher_Renamed.pdf"
+      );
+      const document = await vscode.workspace.openTextDocument({
+        language: "markdown",
+        content: "{% doc_link \"Watcher",
+      });
+
+      try {
+        await writeFile(createdFile, "Integration fixture\n");
+        await waitForCompletionState(document, "Watcher Created", true);
+        await rename(createdFile, renamedFile);
+        await waitForCompletionState(document, "Watcher Renamed", true);
+        await waitForCompletionState(document, "Watcher Created", false);
+        await unlink(renamedFile);
+        await waitForCompletionState(document, "Watcher Renamed", false);
+      } finally {
+        await unlink(createdFile).catch(() => undefined);
+        await unlink(renamedFile).catch(() => undefined);
+      }
+    });
+
+    test("supports ImgFlow and Documents completions in Liquid files", async () => {
+      const document = await openDocument("page.liquid");
+      const imagePosition = findPosition(document, "{% imgflow ");
+      const imageCompletions = await getCompletions(document, imagePosition);
+      const imageLabels = imageCompletions.items.map((item) => item.label.toString());
+
+      assert.ok(imageLabels.includes("diagram.webp"), "Liquid image completions should include diagram.webp");
+
+      const documentPosition = findPosition(document, "{% doc_link \"Board");
+      const documentCompletions = await getCompletions(document, documentPosition);
+      const documentLabels = documentCompletions.items.map((item) => item.label.toString());
+
+      assert.ok(documentLabels.includes("Board Minutes"), "Liquid document completions should include Board Minutes");
     });
 
     test("filters completions by typed text", async () => {

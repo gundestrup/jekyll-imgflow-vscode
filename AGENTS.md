@@ -6,9 +6,10 @@
 
 - Compile TypeScript: `npm run compile`
 - Watch builds: `npm run watch`
-- Lint and typecheck: `npm run lint` (compile plus ESLint)
-- Typecheck only: `npm run lint:types`
-- ESLint only: `npm run lint:eslint`
+- Lint and typecheck: `npm run lint` (compile source, typecheck tests, plus ESLint)
+- Typecheck only: `npm run lint:types` (source and tests)
+- Test typecheck only: `npm run lint:tests`
+- ESLint only: `npm run lint:eslint` (source and tests)
 - Unit tests: `npm test` (Vitest)
 - Integration tests: `npm run test:integration` (VS Code Extension Development Host via `@vscode/test-electron`)
 - Dependency audit: `npm run audit` (fails on high or critical advisories)

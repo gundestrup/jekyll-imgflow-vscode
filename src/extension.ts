@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
-import { ImageIndex } from "./imageIndex";
 import { ImgflowCompletionProvider } from "./completionProvider";
+import { DocumentsCompletionProvider } from "./documentsCompletionProvider";
+import { WorkspaceIndexes } from "./workspaceIndexes";
 
 const IMG_TAG_PATTERN = /\{%\s*imgflow\s/;
 
@@ -16,17 +17,17 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   console.log(`[Jekyll ImgFlow] workspace root: ${workspaceRoot}`);
 
-  const index = new ImageIndex(workspaceRoot);
+  const indexes = new WorkspaceIndexes(workspaceRoot);
+  context.subscriptions.push(indexes);
   try {
-    await index.refresh();
-    console.log(`[Jekyll ImgFlow] indexed ${index.getImages().length} images`);
+    await indexes.initialize();
   } catch (error) {
-    console.error("[Jekyll ImgFlow] refresh failed:", error);
-    vscode.window.showErrorMessage(`Jekyll ImgFlow refresh failed: ${error}`);
+    console.error("[Jekyll Autocomplete] refresh failed:", error);
+    vscode.window.showErrorMessage(`Jekyll autocomplete refresh failed: ${error}`);
   }
-  index.registerWatchers(context);
 
-  const provider = new ImgflowCompletionProvider(index);
+  const provider = new ImgflowCompletionProvider(indexes.images);
+  const documentsProvider = new DocumentsCompletionProvider(indexes.documents);
 
   // Also trigger on common image-name characters so the list refines as the user types
   const triggerChars = [
@@ -48,8 +49,23 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     provider,
     ...triggerChars
   );
+  const markdownDocumentsProvider = vscode.languages.registerCompletionItemProvider(
+    { language: "markdown" },
+    documentsProvider,
+    ...triggerChars
+  );
+  const liquidDocumentsProvider = vscode.languages.registerCompletionItemProvider(
+    { language: "liquid", scheme: "file" },
+    documentsProvider,
+    ...triggerChars
+  );
 
-  context.subscriptions.push(markdownProvider, liquidProvider);
+  context.subscriptions.push(
+    markdownProvider,
+    liquidProvider,
+    markdownDocumentsProvider,
+    liquidDocumentsProvider
+  );
 
   // Optional: show a status item when inside an imgflow tag
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);

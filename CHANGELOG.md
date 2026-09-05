@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-05
+
+### Added
+
+- Document title autocomplete for `{% doc_link %}` and category autocomplete for `{% doc_category %}`
+- Support for `jekyll-documents` roots, extensions, filename validation, path categories, and category mappings
+- Path-based completion insertion for duplicate document titles and repeated category names supported by `jekyll-documents` 0.7.0
+
+### Changed
+
+- Reload autocomplete indexes and directory watchers when `_config.yml` or extension settings change
+- Share recursive file collection and parsed Jekyll configuration across ImgFlow and Documents indexing
+- Expand the VS Code integration fixture to declare both gems and cover root-level and deeply nested documents, overlapping and mapped categories, quoting, duplicate titles, filtering, and live file updates
+- Typecheck all unit and integration tests through an editor-discoverable test TypeScript project
+
 ## [0.1.4] - 2026-09-03
 
 ### Added

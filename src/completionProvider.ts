@@ -108,7 +108,6 @@ export class ImgflowCompletionProvider implements vscode.CompletionItemProvider 
       });
     }
 
-    console.log(`[Jekyll ImgFlow] no match for: ${textBefore}`);
     return [];
   }
 }

@@ -10,6 +10,7 @@ eslint.config.mjs
 .eslint*
 .vscode/
 .vscode-test/
+.ruby-lsp/
 node_modules/**
 !node_modules/js-yaml/**
 !node_modules/argparse/**

@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "..",
+    "types": ["node", "vscode", "mocha", "vitest"]
+  },
+  "include": [
+    "../src/**/*.ts",
+    "**/*.ts"
+  ],
+  "exclude": [
+    "../node_modules",
+    "../.vscode-test"
+  ]
+}
