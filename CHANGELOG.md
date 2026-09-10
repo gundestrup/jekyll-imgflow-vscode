@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-09-10
+
+### Added
+
+- Semgrep and CodeFactor badges to README
+- `.codefactor.yml` scoping CodeFactor analysis to `src/**`
+- `npm run semgrep` script for local Pro engine dry-run scans (`semgrep ci --dry-run`)
+- `npm run semgrep:local` script for offline community edition scans with `.semgrep.yml`
+- `npm run semgrep:publish` script to publish custom rules to the Semgrep App registry
+
+### Changed
+
+- Updated `eslint` to 10.10.0, `typescript-eslint` to 8.70.0, and `@types/node` to 26.5.1
+- Pinned GitHub Actions to commit SHAs in `ci.yml` and `publish.yml` (`actions/checkout@3d3c42e`, `actions/setup-node@8207627`)
+- Added 7-day cooldown to Dependabot configuration for both npm and github-actions ecosystems
+- Excluded `.codefactor.yml` and `.semgrep.yml` from the VSIX package via `.vscodeignore`
+
+### Fixed
+
+- Resolved 13 Semgrep Pro findings: 2 Dependabot missing cooldown, 9 GitHub Actions mutable tag references, 2 non-literal RegExp in `documentsCompletionProvider.ts` (replaced dynamic `new RegExp` with pre-compiled regex literals)
+
 ## [0.2.0] - 2026-09-05
 
 ### Notes

@@ -10,12 +10,24 @@ interface ArgumentMatch {
   wholeRange: vscode.Range;
 }
 
+type DocTag = "doc_link" | "doc_category";
+
+const QUOTED_PATTERNS: Record<DocTag, RegExp> = {
+  doc_link: /\{%\s*doc_link\s+(["'])([^"']*)(\1)?$/,
+  doc_category: /\{%\s*doc_category\s+(["'])([^"']*)(\1)?$/,
+};
+
+const BARE_PATTERNS: Record<DocTag, RegExp> = {
+  doc_link: /\{%\s*doc_link\s+([^\s%}]*)$/,
+  doc_category: /\{%\s*doc_category\s+([^\s%}]*)$/,
+};
+
 function argumentMatch(
   textBefore: string,
   position: vscode.Position,
-  tag: "doc_link" | "doc_category"
+  tag: DocTag
 ): ArgumentMatch | null {
-  const quoted = textBefore.match(new RegExp(`\\{%\\s*${tag}\\s+(["'])([^"']*)(\\1)?$`));
+  const quoted = textBefore.match(QUOTED_PATTERNS[tag]);
   if (quoted) {
     const typed = quoted[2] ?? "";
     const closeQuotePresent = Boolean(quoted[3]);
@@ -31,7 +43,7 @@ function argumentMatch(
     };
   }
 
-  const bare = textBefore.match(new RegExp(`\\{%\\s*${tag}\\s+([^\\s%}]*)$`));
+  const bare = textBefore.match(BARE_PATTERNS[tag]);
   if (!bare) {
     return null;
   }

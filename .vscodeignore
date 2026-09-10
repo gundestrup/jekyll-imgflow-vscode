@@ -1,6 +1,8 @@
 .gitignore
 .github/
 AGENTS.md
+.codefactor.yml
+.semgrep.yml
 README.md
 README.devel.md
 README.vsix.md

@@ -85,7 +85,10 @@
     "audit": "npm audit --audit-level=high",
     "verify": "npm run lint && npm run test && npm run audit",
     "prepare:vsix-readme": "node scripts/prepare-vsix-readme.mjs",
-    "package": "npm run prepare:vsix-readme && vsce package --readme-path .vsix-readme/README.md"
+    "package": "npm run prepare:vsix-readme && vsce package --readme-path .vsix-readme/README.md",
+    "semgrep": "semgrep ci --dry-run",
+    "semgrep:local": "semgrep scan --config .semgrep.yml --error src/",
+    "semgrep:publish": "semgrep publish .semgrep.yml"
   },
   "dependencies": {
     "js-yaml": "^5.4.1"
@@ -97,10 +100,10 @@
     "@types/vscode": "1.91.0",
     "@vscode/test-electron": "^3.1.0",
     "@vscode/vsce": "^3.9.2",
-    "eslint": "^10.9.1",
+    "eslint": "^10.10.0",
     "mocha": "^11.3.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.68.0",
+    "typescript-eslint": "^8.70.0",
     "vitest": "^4.1.11"
   },
   "overrides": {
