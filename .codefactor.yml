@@ -1,0 +1,14 @@
+# CodeFactor configuration
+# https://docs.codefactor.io/configuration/customization/
+ratings:
+  paths:
+    - "src/**"
+exclude:
+  - "out/**"
+  - "node_modules/**"
+  - ".vscode-test/**"
+  - "*.vsix"
+  - "images/**"
+  - ".github/**"
+  - "scripts/**"
+  - "test/**"
