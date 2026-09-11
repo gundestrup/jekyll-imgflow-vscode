@@ -63,10 +63,10 @@ export class ImgflowCompletionProvider implements vscode.CompletionItemProvider 
     const textBefore = line.slice(0, position.character);
 
     // 1. Image path completion: {% imgflow "partial
-    const pathMatch = textBefore.match(/\{%\s*imgflow\s+(["']?)([^%"']*)(\1)?$/);
+    const pathMatch = textBefore.match(/\{%\s*imgflow\s+(?:(["'])([^%"']*)(\1)?|([^%"'\s][^%"']*))?$/);
     if (pathMatch) {
-      const openQuote = pathMatch[1];
-      const typed = pathMatch[2] ?? "";
+      const openQuote = pathMatch[1] ?? "";
+      const typed = pathMatch[2] ?? pathMatch[4] ?? "";
       const closeQuotePresent = pathMatch[3];
       const images = this.index.getImages();
 
@@ -88,7 +88,7 @@ export class ImgflowCompletionProvider implements vscode.CompletionItemProvider 
     }
 
     // 2. Parameter completion: {% imgflow "..." <partial
-    const paramMatch = textBefore.match(/\{%\s*imgflow\s+(?:["'][^"']+["'])\s+([^%}]*)$/);
+    const paramMatch = textBefore.match(/\{%\s*imgflow\s+(?:["'][^"']+["'])\s+([^%}\s][^%}]*)?$/);
     if (paramMatch) {
       const tail = paramMatch[1] ?? "";
       const parts = tail.split(/\s+/);

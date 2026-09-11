@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-09-11
+
+### Added
+
+- SonarCloud quality gate badge to README
+- `Gemfile.lock` for the `test/fixtures/jekyll-site` fixture (SonarCloud `text:S8568`)
+
+### Changed
+
+- Run `npm ci --ignore-scripts` in CI and publish workflows (SonarCloud `githubactions:S6505`)
+- Pin the CI Semgrep install to `semgrep==1.176.1` with `--only-binary :all:` (SonarCloud `githubactions:S8541`, `githubactions:S8544`)
+- Move `contents: write` permission from workflow level to the `publish` job (SonarCloud `githubactions:S8233`)
+
+### Fixed
+
+- Resolved 11 SonarCloud findings: locale-aware image sorting in `imageIndex.ts` (`typescript:S2871`), super-linear regex backtracking in `completionProvider.ts` (`typescript:S8786`), unpinned/scripted dependency installs and workflow-level write permission in GitHub Actions, and missing fixture lock file
+
 ## [0.2.1] - 2026-09-10
 
 ### Added

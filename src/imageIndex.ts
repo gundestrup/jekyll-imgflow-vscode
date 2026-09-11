@@ -26,7 +26,7 @@ export class ImageIndex {
       }
     }
 
-    this.images = [...new Set(results)].sort();
+    this.images = [...new Set(results)].sort((a, b) => a.localeCompare(b));
   }
 
   getImages(): string[] {
