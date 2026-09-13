@@ -21,11 +21,16 @@ Source is in `src/`, compiled output in `out/`. Press `F5` in VS Code to launch 
 ## Verification
 
 ```bash
-npm run verify              # lint + unit tests + audit
-npm run test:integration    # VS Code integration tests (downloads VS Code 1.91.0)
+npm run verify                     # lint + unit tests + audit
+npm run test:integration           # VS Code integration tests (downloads VS Code 1.91.0)
+npm run test:coverage              # unit tests with v8 coverage (coverage/cobertura-coverage.xml)
+npm run test:integration:coverage  # integration tests with extension-host coverage
+                                   # (coverage/integration/cobertura-coverage.xml)
 ```
 
 Integration tests run against a fixture workspace in `test/fixtures/jekyll-site/`. Override the VS Code version with `VSCODE_VERSION=stable npm run test:integration`.
+
+Coverage uploads to Codecov in CI: the `verify` job sends unit coverage and the `integration` job sends extension-host coverage, which Codecov merges into one report. Thresholds live in `codecov.yml`.
 
 ## Packaging
 
