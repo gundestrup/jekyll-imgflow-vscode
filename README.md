@@ -1,5 +1,8 @@
 # Jekyll ImgFlow — VS Code companion
 
+[![codecov](https://codecov.io/gh/gundestrup/jekyll-imgflow-vscode/branch/main/graph/badge.svg)](https://codecov.io/gh/gundestrup/jekyll-imgflow-vscode)
+
+
 ![Jekyll ImgFlow logo](images/logo.png)
 
 [![Version](https://img.shields.io/open-vsx/v/gundestrup/jekyll-imgflow)](https://open-vsx.org/extension/gundestrup/jekyll-imgflow)
