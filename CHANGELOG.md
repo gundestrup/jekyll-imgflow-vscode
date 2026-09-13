@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Added
+
+- Codecov coverage reporting: CI runs `npm run test:coverage` (Vitest v8
+  coverage, Cobertura XML via `@vitest/coverage-v8`) and uploads it with
+  `codecov/codecov-action`; status check thresholds live in `codecov.yml`.
+
 ## [0.2.2] - 2026-09-11
 
 ### Added
