@@ -1,5 +1,6 @@
 import * as path from "node:path";
 import { rename, unlink, writeFile } from "node:fs/promises";
+import v8 from "node:v8";
 import Mocha from "mocha";
 import * as vscode from "vscode";
 import * as assert from "node:assert";
@@ -362,6 +363,9 @@ export function run(): Promise<void> {
 
   return new Promise((resolve, reject) => {
     mocha.run((failures) => {
+      if (process.env.NODE_V8_COVERAGE) {
+        v8.takeCoverage();
+      }
       if (failures > 0) {
         reject(new Error(`${failures} integration test(s) failed`));
       } else {
