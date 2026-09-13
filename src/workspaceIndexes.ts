@@ -62,7 +62,7 @@ export class WorkspaceIndexes implements vscode.Disposable {
     this.configError = null;
 
     const vscodeConfig = vscode.workspace.getConfiguration("jekyllImgFlow");
-    const originals = vscodeConfig.get<string | string[] | undefined>("originals");
+    const originals = vscodeConfig.get<string | string[] | null>("originals");
     const formats = vscodeConfig.get<string[] | undefined>("formats");
     const imgflowConfig = resolveImgflowConfig(loaded.config, originals);
     const documentsConfig = parseDocumentsConfig(loaded.config);

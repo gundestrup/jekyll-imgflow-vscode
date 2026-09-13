@@ -39,6 +39,28 @@ describe("parseDocumentsConfig", () => {
       categoryMap: { Board: "Minutes" },
     });
   });
+
+  it("falls back to defaults when documents is not a mapping", () => {
+    expect(parseDocumentsConfig({ documents: "nope" })).toEqual({
+      root: "assets/documents",
+      includeExtensions: [".pdf", ".docx", ".pptx", ".xlsx", ".odt", ".ods", ".odp"],
+      strictFilename: true,
+      categoriesFromPath: true,
+      categoryMap: {},
+    });
+  });
+
+  it("drops non-string category map values and non-array extensions", () => {
+    const config = parseDocumentsConfig({
+      documents: {
+        category_map: { Board: "minutes", Bad: 5 },
+        include_extensions: "pdf",
+      },
+    });
+
+    expect(config.categoryMap).toEqual({ Board: "minutes" });
+    expect(config.includeExtensions).toEqual([".pdf", ".docx", ".pptx", ".xlsx", ".odt", ".ods", ".odp"]);
+  });
 });
 
 describe("parseDocumentFilename", () => {
@@ -51,6 +73,22 @@ describe("parseDocumentFilename", () => {
 
   it("rejects invalid calendar dates in strict mode", () => {
     expect(parseDocumentFilename("2026-13-99_Invalid_Date", true)).toBeNull();
+  });
+
+  it("rejects impossible days for the given month", () => {
+    expect(parseDocumentFilename("2026-04-31_Short_Month", true)).toBeNull();
+    expect(parseDocumentFilename("2026-01-00_Zero_Day", true)).toBeNull();
+  });
+
+  it("handles leap years correctly", () => {
+    expect(parseDocumentFilename("2023-02-29_Not_Leap", true)).toBeNull();
+    expect(parseDocumentFilename("1900-02-29_Century", true)).toBeNull();
+    expect(parseDocumentFilename("2024-02-29_Leap", true)?.date).toBe("2024-02-29");
+    expect(parseDocumentFilename("2000-02-29_Leap_Century", true)?.date).toBe("2000-02-29");
+  });
+
+  it("rejects filenames without a date prefix in strict mode", () => {
+    expect(parseDocumentFilename("Board_Meeting", true)).toBeNull();
   });
 
   it("uses the complete filename as a title in non-strict mode", () => {
@@ -90,6 +128,24 @@ describe("collectDocuments", () => {
       relativePath: "Board/Meetings/2026-03-01_Annual_Report.PDF",
       sourcePath: "Board/Meetings/2026-03-01_Annual_Report.PDF",
     }]);
+  });
+
+  it("excludes files that fail strict filename parsing", async () => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), "jekyll-documents-"));
+    temporaryDirectories.push(directory);
+    await writeFile(path.join(directory, "2026-13-40_Bad_Date.pdf"), "fixture");
+    await writeFile(path.join(directory, "No_Date.pdf"), "fixture");
+    await writeFile(path.join(directory, "2026-03-01_Valid.pdf"), "fixture");
+
+    const documents = collectDocuments(directory, {
+      root: "assets/documents",
+      includeExtensions: [".pdf"],
+      strictFilename: true,
+      categoriesFromPath: true,
+      categoryMap: {},
+    });
+
+    expect(documents.map((document) => document.title)).toEqual(["Valid"]);
   });
 
   it("uses uncategorized when path categories are disabled", async () => {

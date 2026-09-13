@@ -2,7 +2,13 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { loadAllowedExtensions, loadImgflowConfig, parseImgflowConfig } from "../src/config";
+import {
+  loadAllowedExtensions,
+  loadImgflowConfig,
+  loadJekyllConfigFile,
+  parseImgflowConfig,
+  parseJekyllConfig,
+} from "../src/config";
 import { collectImageFiles } from "../src/imageFiles";
 
 const temporaryDirectories: string[] = [];
@@ -12,6 +18,12 @@ afterEach(async () => {
 });
 
 describe("parseImgflowConfig", () => {
+  it("filters non-string originals entries", () => {
+    expect(parseImgflowConfig("imgflow:\n  originals: [one, 2, three]\n")).toEqual({
+      originals: ["one", "three"],
+    });
+  });
+
   it("reads a scalar originals path", () => {
     expect(parseImgflowConfig("imgflow:\n  originals: assets/images/originals\n")).toEqual({
       originals: ["assets/images/originals"],
@@ -28,6 +40,24 @@ describe("parseImgflowConfig", () => {
     expect(parseImgflowConfig("imgflow:\n  formats: [jpg, png]\n")).toEqual({
       originals: ["assets/images/originals"],
     });
+  });
+});
+
+describe("parseJekyllConfig", () => {
+  it("returns an empty object for non-mapping YAML", () => {
+    expect(parseJekyllConfig("- just\n- a\n- list\n")).toEqual({});
+  });
+});
+
+describe("loadJekyllConfigFile", () => {
+  it("returns an error result for malformed YAML", async () => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), "jekyll-imgflow-"));
+    temporaryDirectories.push(directory);
+    await writeFile(path.join(directory, "_config.yml"), "imgflow: [unclosed\n  bad: {");
+
+    const result = loadJekyllConfigFile(directory);
+    expect(result.config).toEqual({});
+    expect(result.error).toBeInstanceOf(Error);
   });
 });
 
@@ -58,6 +88,26 @@ describe("loadImgflowConfig", () => {
 
     expect(loadImgflowConfig(directory)).toEqual({
       originals: ["assets/images/originals"],
+    });
+  });
+
+  it("treats an empty VS Code setting as unset", async () => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), "jekyll-imgflow-"));
+    temporaryDirectories.push(directory);
+    await writeFile(path.join(directory, "_config.yml"), "imgflow:\n  originals: from-config\n");
+
+    expect(loadImgflowConfig(directory, "")).toEqual({
+      originals: ["from-config"],
+    });
+  });
+
+  it("treats a null VS Code setting as unset", async () => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), "jekyll-imgflow-"));
+    temporaryDirectories.push(directory);
+    await writeFile(path.join(directory, "_config.yml"), "imgflow:\n  originals: from-config\n");
+
+    expect(loadImgflowConfig(directory, null)).toEqual({
+      originals: ["from-config"],
     });
   });
 });

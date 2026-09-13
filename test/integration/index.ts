@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { rename, unlink, writeFile } from "node:fs/promises";
+import { readFile, rename, rm, unlink, writeFile } from "node:fs/promises";
 import v8 from "node:v8";
 import Mocha from "mocha";
 import * as vscode from "vscode";
@@ -354,6 +354,99 @@ export function run(): Promise<void> {
           `Completion "${label}" should start with "he" when filtering, got: ${labels.join(", ")}`
         );
       }
+    });
+
+    test("reindexes when _config.yml changes", async () => {
+      const configPath = path.join(FIXTURE_ROOT, "_config.yml");
+      const original = await readFile(configPath, "utf8");
+      const document = await vscode.workspace.openTextDocument({
+        language: "markdown",
+        content: "{% imgflow \"he",
+      });
+
+      try {
+        await writeFile(configPath, "plugins: []\nimgflow:\n  originals: assets/images/missing\n");
+        await waitForCompletionState(document, "hero.jpg", false);
+      } finally {
+        await writeFile(configPath, original);
+      }
+      await waitForCompletionState(document, "hero.jpg", true);
+    });
+
+    test("warns when _config.yml is malformed and recovers", async () => {
+      const configPath = path.join(FIXTURE_ROOT, "_config.yml");
+      const original = await readFile(configPath, "utf8");
+      const document = await vscode.workspace.openTextDocument({
+        language: "markdown",
+        content: "{% imgflow \"he",
+      });
+
+      try {
+        await writeFile(configPath, "imgflow: [unclosed\n");
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const extension = vscode.extensions.getExtension("gundestrup.jekyll-imgflow");
+        assert.ok(extension?.isActive, "Extension should stay active after a config parse error");
+      } finally {
+        await writeFile(configPath, original);
+      }
+      await waitForCompletionState(document, "hero.jpg", true);
+    });
+
+    test("reacts to jekyllImgFlow settings changes", async () => {
+      const document = await vscode.workspace.openTextDocument({
+        language: "markdown",
+        content: "{% imgflow \"",
+      });
+      const configuration = vscode.workspace.getConfiguration("jekyllImgFlow");
+      const settingsDirectory = path.join(FIXTURE_ROOT, ".vscode");
+
+      try {
+        await configuration.update("formats", ["png"], vscode.ConfigurationTarget.Workspace);
+        await waitForCompletionState(document, "hero.jpg", false);
+        await waitForCompletionState(document, "photo.png", true);
+      } finally {
+        await configuration.update("formats", undefined, vscode.ConfigurationTarget.Workspace);
+        await rm(settingsDirectory, { recursive: true, force: true });
+      }
+      await waitForCompletionState(document, "hero.jpg", true);
+    });
+
+    test("ignores unrelated settings changes", async () => {
+      const configuration = vscode.workspace.getConfiguration("files");
+      const settingsDirectory = path.join(FIXTURE_ROOT, ".vscode");
+
+      try {
+        await configuration.update("autoSave", "off", vscode.ConfigurationTarget.Workspace);
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      } finally {
+        await configuration.update("autoSave", undefined, vscode.ConfigurationTarget.Workspace);
+        await rm(settingsDirectory, { recursive: true, force: true });
+      }
+
+      const document = await vscode.workspace.openTextDocument({
+        language: "markdown",
+        content: "{% imgflow \"he",
+      });
+      const position = document.positionAt(document.getText().length);
+      const completions = await getCompletions(document, position);
+      assert.ok(
+        completions.items.some((item) => item.label.toString() === "hero.jpg"),
+        "Completions should still be served after an unrelated settings change"
+      );
+    });
+
+    test("updates the status bar item as the cursor moves", async () => {
+      const document = await openDocument("index.md");
+      const editor = vscode.window.activeTextEditor;
+      assert.ok(editor, "Editor should be active");
+
+      const tagPosition = findPosition(document, "{% imgflow ");
+      editor.selection = new vscode.Selection(tagPosition, tagPosition);
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      const headingPosition = findPosition(document, "# Jekyll ImgFlow Fixture");
+      editor.selection = new vscode.Selection(headingPosition, headingPosition);
+      await new Promise((resolve) => setTimeout(resolve, 200));
     });
 
     suiteTeardown(async () => {

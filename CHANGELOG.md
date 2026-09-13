@@ -10,6 +10,16 @@
   extension host via `NODE_V8_COVERAGE`, remapped to `src/` with `c8`),
   uploading both reports with `codecov/codecov-action`; status check
   thresholds live in `codecov.yml`.
+- Unit tests for document filename/date validation, index roots, and
+  configuration edge cases; integration tests for `_config.yml` and settings
+  reindexing, malformed configuration warnings, and status bar updates
+
+### Fixed
+
+- `_config.yml` `imgflow.originals` was ignored: the `jekyllImgFlow.originals`
+  setting defaults to `null`, which the override check treated as a set value
+  and resolved to the default path. Unset (`null`, `undefined`, or empty)
+  settings now correctly fall back to `_config.yml`
 
 ## [0.2.2] - 2026-09-11
 

@@ -84,10 +84,10 @@ export function parseImgflowConfig(content: string): ImgflowConfig {
 
 export function resolveImgflowConfig(
   config: JekyllConfig,
-  vscodeOriginals?: string | string[] | undefined
+  vscodeOriginals?: string | string[] | null
 ): ImgflowConfig {
   const imgflow = asRecord(config.imgflow);
-  const originals = vscodeOriginals === undefined || vscodeOriginals === ""
+  const originals = vscodeOriginals === undefined || vscodeOriginals === null || vscodeOriginals === ""
     ? normalizeOriginals(imgflow?.originals)
     : normalizeOriginals(vscodeOriginals);
   return { originals };
@@ -95,7 +95,7 @@ export function resolveImgflowConfig(
 
 export function loadImgflowConfig(
   workspaceRoot: string,
-  vscodeOriginals?: string | string[] | undefined
+  vscodeOriginals?: string | string[] | null
 ): ImgflowConfig {
   return resolveImgflowConfig(loadJekyllConfigFile(workspaceRoot).config, vscodeOriginals);
 }
