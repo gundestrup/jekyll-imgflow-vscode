@@ -35,6 +35,7 @@
 - `images/`: Extension icon (`icon.png`) and README logo (`logo.png`)
 - `package.json`: Extension manifest and configuration
 - `.vscodeignore`: Controls what is bundled into the VSIX
+- `.devin/config.json`: Devin CLI project permissions (allow-listed commands)
 
 ## Key Dependencies
 
