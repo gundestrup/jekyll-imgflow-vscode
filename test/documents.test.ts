@@ -1,25 +1,20 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import os from "node:os";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { parseDocumentsConfig } from "../src/config";
+import { parseDocumentsConfig, type DocumentsConfig } from "../src/config";
 import { collectDocuments, parseDocumentFilename } from "../src/documentFiles";
+import { cleanupTempDirs, DEFAULT_DOCUMENTS_CONFIG, makeTempDir } from "./helpers";
 
-const temporaryDirectories: string[] = [];
+afterEach(cleanupTempDirs);
 
-afterEach(async () => {
-  await Promise.all(temporaryDirectories.splice(0).map((directory) => rm(directory, { recursive: true, force: true })));
-});
+const COLLECT_CONFIG: DocumentsConfig = {
+  ...DEFAULT_DOCUMENTS_CONFIG,
+  includeExtensions: [".pdf"],
+};
 
 describe("parseDocumentsConfig", () => {
   it("uses the jekyll-documents defaults", () => {
-    expect(parseDocumentsConfig({})).toEqual({
-      root: "assets/documents",
-      includeExtensions: [".pdf", ".docx", ".pptx", ".xlsx", ".odt", ".ods", ".odp"],
-      strictFilename: true,
-      categoriesFromPath: true,
-      categoryMap: {},
-    });
+    expect(parseDocumentsConfig({})).toEqual(DEFAULT_DOCUMENTS_CONFIG);
   });
 
   it("reads document indexing options", () => {
@@ -41,13 +36,7 @@ describe("parseDocumentsConfig", () => {
   });
 
   it("falls back to defaults when documents is not a mapping", () => {
-    expect(parseDocumentsConfig({ documents: "nope" })).toEqual({
-      root: "assets/documents",
-      includeExtensions: [".pdf", ".docx", ".pptx", ".xlsx", ".odt", ".ods", ".odp"],
-      strictFilename: true,
-      categoriesFromPath: true,
-      categoryMap: {},
-    });
+    expect(parseDocumentsConfig({ documents: "nope" })).toEqual(DEFAULT_DOCUMENTS_CONFIG);
   });
 
   it("drops non-string category map values and non-array extensions", () => {
@@ -59,7 +48,7 @@ describe("parseDocumentsConfig", () => {
     });
 
     expect(config.categoryMap).toEqual({ Board: "minutes" });
-    expect(config.includeExtensions).toEqual([".pdf", ".docx", ".pptx", ".xlsx", ".odt", ".ods", ".odp"]);
+    expect(config.includeExtensions).toEqual(DEFAULT_DOCUMENTS_CONFIG.includeExtensions);
   });
 });
 
@@ -105,17 +94,13 @@ describe("parseDocumentFilename", () => {
 
 describe("collectDocuments", () => {
   it("indexes configured extensions and applies nested category mapping", async () => {
-    const directory = await mkdtemp(path.join(os.tmpdir(), "jekyll-documents-"));
-    temporaryDirectories.push(directory);
+    const directory = await makeTempDir("jekyll-documents-");
     await mkdir(path.join(directory, "Board", "Meetings"), { recursive: true });
     await writeFile(path.join(directory, "Board", "Meetings", "2026-03-01_Annual_Report.PDF"), "fixture");
     await writeFile(path.join(directory, "Board", "Meetings", "notes.txt"), "fixture");
 
     const documents = collectDocuments(directory, {
-      root: "assets/documents",
-      includeExtensions: [".pdf"],
-      strictFilename: true,
-      categoriesFromPath: true,
+      ...COLLECT_CONFIG,
       categoryMap: { Meetings: "Reports" },
     });
 
@@ -131,32 +116,23 @@ describe("collectDocuments", () => {
   });
 
   it("excludes files that fail strict filename parsing", async () => {
-    const directory = await mkdtemp(path.join(os.tmpdir(), "jekyll-documents-"));
-    temporaryDirectories.push(directory);
+    const directory = await makeTempDir("jekyll-documents-");
     await writeFile(path.join(directory, "2026-13-40_Bad_Date.pdf"), "fixture");
     await writeFile(path.join(directory, "No_Date.pdf"), "fixture");
     await writeFile(path.join(directory, "2026-03-01_Valid.pdf"), "fixture");
 
-    const documents = collectDocuments(directory, {
-      root: "assets/documents",
-      includeExtensions: [".pdf"],
-      strictFilename: true,
-      categoriesFromPath: true,
-      categoryMap: {},
-    });
+    const documents = collectDocuments(directory, COLLECT_CONFIG);
 
     expect(documents.map((document) => document.title)).toEqual(["Valid"]);
   });
 
   it("uses uncategorized when path categories are disabled", async () => {
-    const directory = await mkdtemp(path.join(os.tmpdir(), "jekyll-documents-"));
-    temporaryDirectories.push(directory);
+    const directory = await makeTempDir("jekyll-documents-");
     await mkdir(path.join(directory, "Board"), { recursive: true });
     await writeFile(path.join(directory, "Board", "Board_Meeting.pdf"), "fixture");
 
     const documents = collectDocuments(directory, {
-      root: "assets/documents",
-      includeExtensions: [".pdf"],
+      ...COLLECT_CONFIG,
       strictFilename: false,
       categoriesFromPath: false,
       categoryMap: { uncategorized: "General" },

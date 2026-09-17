@@ -1,24 +1,13 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import os from "node:os";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import type { DocumentsConfig } from "../src/config";
 import { DocumentIndex } from "../src/documentIndex";
 import { ImageIndex } from "../src/imageIndex";
+import { cleanupTempDirs, DEFAULT_DOCUMENTS_CONFIG, makeTempDir } from "./helpers";
 
-const temporaryDirectories: string[] = [];
+afterEach(cleanupTempDirs);
 
-const DOCUMENTS_CONFIG: DocumentsConfig = {
-  root: "assets/documents",
-  includeExtensions: [".pdf"],
-  strictFilename: true,
-  categoriesFromPath: true,
-  categoryMap: {},
-};
-
-afterEach(async () => {
-  await Promise.all(temporaryDirectories.splice(0).map((directory) => rm(directory, { recursive: true, force: true })));
-});
+const DOCUMENTS_CONFIG = { ...DEFAULT_DOCUMENTS_CONFIG, includeExtensions: [".pdf"] };
 
 describe("DocumentIndex", () => {
   it("reports no root before refresh", () => {
@@ -34,8 +23,7 @@ describe("DocumentIndex", () => {
   });
 
   it("supports an absolute document root", async () => {
-    const directory = await mkdtemp(path.join(os.tmpdir(), "jekyll-documents-"));
-    temporaryDirectories.push(directory);
+    const directory = await makeTempDir("jekyll-documents-");
     await writeFile(path.join(directory, "2026-01-01_Notes.pdf"), "fixture");
 
     const index = new DocumentIndex("/unrelated");
@@ -46,8 +34,7 @@ describe("DocumentIndex", () => {
   });
 
   it("lists categories sorted by path", async () => {
-    const directory = await mkdtemp(path.join(os.tmpdir(), "jekyll-documents-"));
-    temporaryDirectories.push(directory);
+    const directory = await makeTempDir("jekyll-documents-");
     await mkdir(path.join(directory, "Zeta"), { recursive: true });
     await mkdir(path.join(directory, "Alpha"), { recursive: true });
     await writeFile(path.join(directory, "Zeta", "2026-01-02_Last.pdf"), "fixture");
@@ -76,8 +63,7 @@ describe("ImageIndex", () => {
   });
 
   it("supports absolute originals paths and dotted formats", async () => {
-    const directory = await mkdtemp(path.join(os.tmpdir(), "jekyll-imgflow-"));
-    temporaryDirectories.push(directory);
+    const directory = await makeTempDir("jekyll-imgflow-");
     await writeFile(path.join(directory, "hero.png"), "image");
     await writeFile(path.join(directory, "hero.jpg"), "image");
 

@@ -14,6 +14,14 @@
   configuration edge cases; integration tests for `_config.yml` and settings
   reindexing, malformed configuration warnings, and status bar updates
 
+### Changed
+
+- Deduplicated unit and integration tests to resolve the SonarCloud
+  duplicated-lines quality gate failure: shared temp-directory and
+  `_config.yml` helpers moved to `test/helpers.ts`, repeated config parsing
+  cases parameterized with `it.each`, and repeated completion, settings, and
+  config-rewrite flows in the integration suite extracted into helpers
+
 ### Fixed
 
 - `_config.yml` `imgflow.originals` was ignored: the `jekyllImgFlow.originals`

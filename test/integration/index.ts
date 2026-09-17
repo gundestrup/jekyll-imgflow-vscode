@@ -7,6 +7,14 @@ import * as assert from "node:assert";
 
 const FIXTURE_ROOT = path.resolve(__dirname, "..", "..", "..", "test", "fixtures", "jekyll-site");
 
+function fixturePath(...segments: string[]): string {
+  return path.join(FIXTURE_ROOT, ...segments);
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function waitForExtension(): Promise<void> {
   const extension = vscode.extensions.getExtension("gundestrup.jekyll-imgflow");
   if (!extension) {
@@ -18,27 +26,27 @@ async function waitForExtension(): Promise<void> {
 }
 
 async function openDocument(relativePath: string): Promise<vscode.TextDocument> {
-  const uri = vscode.Uri.file(path.join(FIXTURE_ROOT, relativePath));
+  const uri = vscode.Uri.file(fixturePath(relativePath));
   const document = await vscode.workspace.openTextDocument(uri);
   await vscode.window.showTextDocument(document);
   return document;
 }
 
-function findPosition(document: vscode.TextDocument, searchText: string): vscode.Position {
-  for (let i = 0; i < document.lineCount; i++) {
-    const line = document.lineAt(i);
-    const index = line.text.indexOf(searchText);
-    if (index !== -1) {
-      return new vscode.Position(i, index + searchText.length);
-    }
-  }
-  throw new Error(`Text "${searchText}" not found in document`);
+async function openMarkdownDocument(content: string): Promise<vscode.TextDocument> {
+  return vscode.workspace.openTextDocument({ language: "markdown", content });
 }
 
-function findLastPosition(document: vscode.TextDocument, searchText: string): vscode.Position {
-  for (let i = document.lineCount - 1; i >= 0; i--) {
-    const line = document.lineAt(i);
-    const index = line.text.indexOf(searchText);
+function findPosition(
+  document: vscode.TextDocument,
+  searchText: string,
+  fromEnd = false
+): vscode.Position {
+  const lineIndexes = [...Array(document.lineCount).keys()];
+  if (fromEnd) {
+    lineIndexes.reverse();
+  }
+  for (const i of lineIndexes) {
+    const index = document.lineAt(i).text.indexOf(searchText);
     if (index !== -1) {
       return new vscode.Position(i, index + searchText.length);
     }
@@ -57,6 +65,30 @@ async function getCompletions(
   );
 }
 
+async function completionsAt(
+  relativePath: string,
+  searchText: string,
+  fromEnd = false
+): Promise<vscode.CompletionList> {
+  const document = await openDocument(relativePath);
+  return getCompletions(document, findPosition(document, searchText, fromEnd));
+}
+
+function labelsOf(completions: vscode.CompletionList): string[] {
+  return completions.items.map((item) => item.label.toString());
+}
+
+function findItem(
+  completions: vscode.CompletionList,
+  label: string
+): vscode.CompletionItem | undefined {
+  return completions.items.find((item) => item.label.toString() === label);
+}
+
+function itemsLabeled(completions: vscode.CompletionList, label: string): vscode.CompletionItem[] {
+  return completions.items.filter((item) => item.label.toString() === label);
+}
+
 async function waitForCompletionState(
   document: vscode.TextDocument,
   label: string,
@@ -69,9 +101,36 @@ async function waitForCompletionState(
     if (present === expected) {
       return;
     }
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await sleep(100);
   }
   throw new Error(`Completion "${label}" did not become ${expected ? "present" : "absent"}`);
+}
+
+async function withFixtureConfig(content: string, run: () => Promise<void>): Promise<void> {
+  const configPath = fixturePath("_config.yml");
+  const original = await readFile(configPath, "utf8");
+  try {
+    await writeFile(configPath, content);
+    await run();
+  } finally {
+    await writeFile(configPath, original);
+  }
+}
+
+async function withWorkspaceSetting(
+  section: string,
+  key: string,
+  value: unknown,
+  run: () => Promise<void>
+): Promise<void> {
+  const configuration = vscode.workspace.getConfiguration(section);
+  try {
+    await configuration.update(key, value, vscode.ConfigurationTarget.Workspace);
+    await run();
+  } finally {
+    await configuration.update(key, undefined, vscode.ConfigurationTarget.Workspace);
+    await rm(fixturePath(".vscode"), { recursive: true, force: true });
+  }
 }
 
 export function run(): Promise<void> {
@@ -91,70 +150,60 @@ export function run(): Promise<void> {
     });
 
     test("suggests image filenames after {% imgflow %} in Markdown", async () => {
-      const document = await openDocument("index.md");
-      const position = findPosition(document, "{% imgflow ");
-      const completions = await getCompletions(document, position);
+      const completions = await completionsAt("index.md", "{% imgflow ");
+      const labels = labelsOf(completions);
 
-      const labels = completions.items.map((item) => item.label);
       assert.ok(labels.length > 0, "Image completion should return at least one item");
       assert.ok(
-        labels.some((label) => label.toString() === "hero.jpg"),
+        labels.includes("hero.jpg"),
         `Completions should include hero.jpg, got: ${labels.join(", ")}`
       );
-      const heroItem = completions.items.find((item) => item.label.toString() === "hero.jpg");
+      const heroItem = findItem(completions, "hero.jpg");
       assert.ok(heroItem, "hero.jpg completion item should be present");
       assert.equal(heroItem.insertText?.toString(), "hero.jpg");
       assert.ok(
-        labels.some((label) => label.toString().includes("photo.png")),
+        labels.some((label) => label.includes("photo.png")),
         `Completions should include photo.png, got: ${labels.join(", ")}`
       );
     });
 
     test("closes an open image quote in the inserted completion", async () => {
-      const document = await openDocument("index.md");
-      const position = findLastPosition(document, "{% imgflow \"he");
-      const completions = await getCompletions(document, position);
-      const heroItem = completions.items.find((item) => item.label.toString() === "hero.jpg");
+      const completions = await completionsAt("index.md", "{% imgflow \"he", true);
+      const heroItem = findItem(completions, "hero.jpg");
 
       assert.ok(heroItem, "hero.jpg completion item should be present");
       assert.equal(heroItem.insertText?.toString(), "hero.jpg\"");
     });
 
     test("suggests nested image filenames", async () => {
-      const document = await openDocument("index.md");
-      const position = findPosition(document, "{% imgflow ");
-      const completions = await getCompletions(document, position);
+      const completions = await completionsAt("index.md", "{% imgflow ");
+      const labels = labelsOf(completions);
 
-      const labels = completions.items.map((item) => item.label);
       assert.ok(labels.length > 0, "Image completion should return at least one item");
       assert.ok(
-        labels.some((label) => label.toString() === "nested/landscape.jpeg"),
+        labels.includes("nested/landscape.jpeg"),
         `Completions should include nested/landscape.jpeg, got: ${labels.join(", ")}`
       );
     });
 
     test("suggests parameter completions after the image path", async () => {
-      const document = await openDocument("index.md");
-      const position = findPosition(document, "{% imgflow \"hero.jpg\" ");
-      const completions = await getCompletions(document, position);
+      const completions = await completionsAt("index.md", "{% imgflow \"hero.jpg\" ");
+      const labels = labelsOf(completions);
 
-      const labels = completions.items.map((item) => item.label);
       assert.ok(labels.length > 0, "Parameter completion should return at least one item");
       assert.ok(
-        labels.some((label) => label.toString() === "width:400"),
+        labels.includes("width:400"),
         `Completions should include width: parameters, got: ${labels.join(", ")}`
       );
       assert.ok(
-        labels.some((label) => label.toString() === "format:webp"),
+        labels.includes("format:webp"),
         `Completions should include format: parameters, got: ${labels.join(", ")}`
       );
     });
 
     test("suggests document titles with metadata after doc_link", async () => {
-      const document = await openDocument("index.md");
-      const position = findPosition(document, "{% doc_link \"Annual");
-      const completions = await getCompletions(document, position);
-      const annualReports = completions.items.filter((item) => item.label.toString() === "Annual Report");
+      const completions = await completionsAt("index.md", "{% doc_link \"Annual");
+      const annualReports = itemsLabeled(completions, "Annual Report");
 
       assert.equal(annualReports.length, 2, "Both documents with duplicate titles should be suggested");
       assert.ok(
@@ -176,20 +225,16 @@ export function run(): Promise<void> {
     });
 
     test("suggests mapped document categories after doc_category", async () => {
-      const document = await openDocument("index.md");
-      const position = findPosition(document, "{% doc_category \"mi");
-      const completions = await getCompletions(document, position);
-      const minutes = completions.items.find((item) => item.label.toString() === "minutes");
+      const completions = await completionsAt("index.md", "{% doc_category \"mi");
+      const minutes = findItem(completions, "minutes");
 
       assert.ok(minutes, "Mapped minutes category should be suggested");
       assert.equal(minutes.insertText?.toString(), "minutes\"");
     });
 
     test("suggests nested documents using the final mapped category", async () => {
-      const document = await openDocument("index.md");
-      const position = findPosition(document, "{% doc_link \"Year");
-      const completions = await getCompletions(document, position);
-      const accounts = completions.items.find((item) => item.label.toString() === "Year End Accounts");
+      const completions = await completionsAt("index.md", "{% doc_link \"Year");
+      const accounts = findItem(completions, "Year End Accounts");
 
       assert.ok(accounts, "Nested document should be suggested");
       assert.equal(accounts.insertText?.toString(), "Year End Accounts\"");
@@ -200,29 +245,23 @@ export function run(): Promise<void> {
         "Archive/Annual/2025-12-15_Year_End_Accounts.xlsx"
       );
 
-      const categoryPosition = findPosition(document, "{% doc_category \"year");
-      const categoryCompletions = await getCompletions(document, categoryPosition);
+      const categoryCompletions = await completionsAt("index.md", "{% doc_category \"year");
       assert.ok(
-        categoryCompletions.items.some((item) => item.label.toString() === "yearly"),
+        labelsOf(categoryCompletions).includes("yearly"),
         "Nested mapped category should be suggested"
       );
     });
 
     test("suggests doc_link documents from the root and several directories deep", async () => {
-      const document = await openDocument("index.md");
-      const rootPosition = findPosition(document, "{% doc_link \"Root");
-      const rootCompletions = await getCompletions(document, rootPosition);
-      const rootPolicy = rootCompletions.items.find((item) => item.label.toString() === "Root Policy");
+      const rootCompletions = await completionsAt("index.md", "{% doc_link \"Root");
+      const rootPolicy = findItem(rootCompletions, "Root Policy");
 
       assert.ok(rootPolicy, "Document directly in documents.root should be suggested");
       assert.ok(rootPolicy.detail?.includes("uncategorized"), "Root document should use uncategorized");
       assert.equal(rootPolicy.documentation?.toString(), "2026-01-10_Root_Policy.pdf");
 
-      const deepPosition = findPosition(document, "{% doc_link \"Regional");
-      const deepCompletions = await getCompletions(document, deepPosition);
-      const regionalResearch = deepCompletions.items.filter(
-        (item) => item.label.toString() === "Regional Research"
-      );
+      const deepCompletions = await completionsAt("index.md", "{% doc_link \"Regional");
+      const regionalResearch = itemsLabeled(deepCompletions, "Regional Research");
 
       assert.equal(regionalResearch.length, 2, "Both repeated Research categories should be suggested");
       assert.ok(
@@ -240,15 +279,10 @@ export function run(): Promise<void> {
     });
 
     test("offers multiple category completions and refines the typed prefix", async () => {
-      const document = await openDocument("index.md");
-      const sharedPosition = findPosition(document, "{% doc_category \"re");
-      const sharedCompletions = await getCompletions(document, sharedPosition);
-      const sharedLabels = sharedCompletions.items.map((item) => item.label.toString());
+      const sharedCompletions = await completionsAt("index.md", "{% doc_category \"re");
 
-      assert.deepEqual(sharedLabels, ["reports", "research", "research"]);
-      const researchCompletions = sharedCompletions.items.filter(
-        (item) => item.label.toString() === "research"
-      );
+      assert.deepEqual(labelsOf(sharedCompletions), ["reports", "research", "research"]);
+      const researchCompletions = itemsLabeled(sharedCompletions, "research");
       assert.ok(
         researchCompletions.every((item) => item.insertText?.toString().startsWith("path:\"")),
         "Repeated category names should insert category path references"
@@ -262,51 +296,31 @@ export function run(): Promise<void> {
         "American category path should be suggested"
       );
 
-      const refinedPosition = findPosition(document, "{% doc_category \"rese");
-      const refinedCompletions = await getCompletions(document, refinedPosition);
-      const refinedLabels = refinedCompletions.items.map((item) => item.label.toString());
-
-      assert.deepEqual(refinedLabels, ["research", "research"]);
+      const refinedCompletions = await completionsAt("index.md", "{% doc_category \"rese");
+      assert.deepEqual(labelsOf(refinedCompletions), ["research", "research"]);
     });
 
     test("quotes bare doc_link completion values containing spaces", async () => {
-      const document = await openDocument("index.md");
-      const position = findPosition(document, "{% doc_link Board");
-      const completions = await getCompletions(document, position);
-      const minutes = completions.items.find((item) => item.label.toString() === "Board Minutes");
+      const completions = await completionsAt("index.md", "{% doc_link Board");
+      const minutes = findItem(completions, "Board Minutes");
 
       assert.ok(minutes, "Board Minutes should be suggested for a bare prefix");
       assert.equal(minutes.insertText?.toString(), "\"Board Minutes\"");
     });
 
     test("filters document titles by typed prefix", async () => {
-      const document = await openDocument("index.md");
-      const position = findPosition(document, "{% doc_link \"Year");
-      const completions = await getCompletions(document, position);
-      const labels = completions.items.map((item) => item.label.toString());
-
-      assert.deepEqual(labels, ["Year End Accounts"]);
+      const completions = await completionsAt("index.md", "{% doc_link \"Year");
+      assert.deepEqual(labelsOf(completions), ["Year End Accounts"]);
     });
 
     test("refreshes document completions after create, rename, and delete", async () => {
-      const createdFile = path.join(
-        FIXTURE_ROOT,
-        "assets",
-        "documents",
-        "Board",
-        "2026-03-04_Watcher_Created.pdf"
+      const createdFile = fixturePath(
+        "assets", "documents", "Board", "2026-03-04_Watcher_Created.pdf"
       );
-      const renamedFile = path.join(
-        FIXTURE_ROOT,
-        "assets",
-        "documents",
-        "Board",
-        "2026-03-04_Watcher_Renamed.pdf"
+      const renamedFile = fixturePath(
+        "assets", "documents", "Board", "2026-03-04_Watcher_Renamed.pdf"
       );
-      const document = await vscode.workspace.openTextDocument({
-        language: "markdown",
-        content: "{% doc_link \"Watcher",
-      });
+      const document = await openMarkdownDocument("{% doc_link \"Watcher");
 
       try {
         await writeFile(createdFile, "Integration fixture\n");
@@ -323,27 +337,23 @@ export function run(): Promise<void> {
     });
 
     test("supports ImgFlow and Documents completions in Liquid files", async () => {
-      const document = await openDocument("page.liquid");
-      const imagePosition = findPosition(document, "{% imgflow ");
-      const imageCompletions = await getCompletions(document, imagePosition);
-      const imageLabels = imageCompletions.items.map((item) => item.label.toString());
+      const imageCompletions = await completionsAt("page.liquid", "{% imgflow ");
+      assert.ok(
+        labelsOf(imageCompletions).includes("diagram.webp"),
+        "Liquid image completions should include diagram.webp"
+      );
 
-      assert.ok(imageLabels.includes("diagram.webp"), "Liquid image completions should include diagram.webp");
-
-      const documentPosition = findPosition(document, "{% doc_link \"Board");
-      const documentCompletions = await getCompletions(document, documentPosition);
-      const documentLabels = documentCompletions.items.map((item) => item.label.toString());
-
-      assert.ok(documentLabels.includes("Board Minutes"), "Liquid document completions should include Board Minutes");
+      const documentCompletions = await completionsAt("page.liquid", "{% doc_link \"Board");
+      assert.ok(
+        labelsOf(documentCompletions).includes("Board Minutes"),
+        "Liquid document completions should include Board Minutes"
+      );
     });
 
     test("filters completions by typed text", async () => {
-      const document = await openDocument("index.md");
-      const position = findLastPosition(document, "{% imgflow \"he");
-      const completions = await getCompletions(document, position);
-      const labels = completions.items
-        .map((item) => item.label)
-        .filter((label): label is string => typeof label === "string");
+      const completions = await completionsAt("index.md", "{% imgflow \"he", true);
+      const labels = labelsOf(completions);
+
       assert.ok(labels.length > 0, "Filtered completion should return at least one item");
       assert.ok(labels.includes("hero.jpg"), "Filtered completion should include hero.jpg");
       assert.equal(new Set(labels).size, labels.length, "Filtered completions should not be duplicated");
@@ -357,80 +367,44 @@ export function run(): Promise<void> {
     });
 
     test("reindexes when _config.yml changes", async () => {
-      const configPath = path.join(FIXTURE_ROOT, "_config.yml");
-      const original = await readFile(configPath, "utf8");
-      const document = await vscode.workspace.openTextDocument({
-        language: "markdown",
-        content: "{% imgflow \"he",
-      });
+      const document = await openMarkdownDocument("{% imgflow \"he");
 
-      try {
-        await writeFile(configPath, "plugins: []\nimgflow:\n  originals: assets/images/missing\n");
-        await waitForCompletionState(document, "hero.jpg", false);
-      } finally {
-        await writeFile(configPath, original);
-      }
+      await withFixtureConfig(
+        "plugins: []\nimgflow:\n  originals: assets/images/missing\n",
+        () => waitForCompletionState(document, "hero.jpg", false)
+      );
       await waitForCompletionState(document, "hero.jpg", true);
     });
 
     test("warns when _config.yml is malformed and recovers", async () => {
-      const configPath = path.join(FIXTURE_ROOT, "_config.yml");
-      const original = await readFile(configPath, "utf8");
-      const document = await vscode.workspace.openTextDocument({
-        language: "markdown",
-        content: "{% imgflow \"he",
-      });
+      const document = await openMarkdownDocument("{% imgflow \"he");
 
-      try {
-        await writeFile(configPath, "imgflow: [unclosed\n");
-        await new Promise((resolve) => setTimeout(resolve, 500));
+      await withFixtureConfig("imgflow: [unclosed\n", async () => {
+        await sleep(500);
         const extension = vscode.extensions.getExtension("gundestrup.jekyll-imgflow");
         assert.ok(extension?.isActive, "Extension should stay active after a config parse error");
-      } finally {
-        await writeFile(configPath, original);
-      }
+      });
       await waitForCompletionState(document, "hero.jpg", true);
     });
 
     test("reacts to jekyllImgFlow settings changes", async () => {
-      const document = await vscode.workspace.openTextDocument({
-        language: "markdown",
-        content: "{% imgflow \"",
-      });
-      const configuration = vscode.workspace.getConfiguration("jekyllImgFlow");
-      const settingsDirectory = path.join(FIXTURE_ROOT, ".vscode");
+      const document = await openMarkdownDocument("{% imgflow \"");
 
-      try {
-        await configuration.update("formats", ["png"], vscode.ConfigurationTarget.Workspace);
+      await withWorkspaceSetting("jekyllImgFlow", "formats", ["png"], async () => {
         await waitForCompletionState(document, "hero.jpg", false);
         await waitForCompletionState(document, "photo.png", true);
-      } finally {
-        await configuration.update("formats", undefined, vscode.ConfigurationTarget.Workspace);
-        await rm(settingsDirectory, { recursive: true, force: true });
-      }
+      });
       await waitForCompletionState(document, "hero.jpg", true);
     });
 
     test("ignores unrelated settings changes", async () => {
-      const configuration = vscode.workspace.getConfiguration("files");
-      const settingsDirectory = path.join(FIXTURE_ROOT, ".vscode");
+      await withWorkspaceSetting("files", "autoSave", "off", () => sleep(300));
 
-      try {
-        await configuration.update("autoSave", "off", vscode.ConfigurationTarget.Workspace);
-        await new Promise((resolve) => setTimeout(resolve, 300));
-      } finally {
-        await configuration.update("autoSave", undefined, vscode.ConfigurationTarget.Workspace);
-        await rm(settingsDirectory, { recursive: true, force: true });
-      }
-
-      const document = await vscode.workspace.openTextDocument({
-        language: "markdown",
-        content: "{% imgflow \"he",
-      });
+      const document = await openMarkdownDocument("{% imgflow \"he");
       const position = document.positionAt(document.getText().length);
       const completions = await getCompletions(document, position);
       assert.ok(
-        completions.items.some((item) => item.label.toString() === "hero.jpg"),
+        findItem(completions, "hero.jpg"),
         "Completions should still be served after an unrelated settings change"
       );
     });
@@ -442,11 +416,11 @@ export function run(): Promise<void> {
 
       const tagPosition = findPosition(document, "{% imgflow ");
       editor.selection = new vscode.Selection(tagPosition, tagPosition);
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      await sleep(200);
 
       const headingPosition = findPosition(document, "# Jekyll ImgFlow Fixture");
       editor.selection = new vscode.Selection(headingPosition, headingPosition);
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      await sleep(200);
     });
 
     suiteTeardown(async () => {
