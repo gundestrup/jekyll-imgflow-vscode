@@ -1,4 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { DocumentIndex } from "../src/documentIndex";
@@ -7,19 +8,21 @@ import { cleanupTempDirs, DEFAULT_DOCUMENTS_CONFIG, makeTempDir } from "./helper
 
 afterEach(cleanupTempDirs);
 
+const MISSING_DIR = path.join(os.tmpdir(), "imgflow-test-nonexistent");
+
 const DOCUMENTS_CONFIG = { ...DEFAULT_DOCUMENTS_CONFIG, includeExtensions: [".pdf"] };
 
 describe("DocumentIndex", () => {
   it("reports no root before refresh", () => {
-    expect(new DocumentIndex("/tmp/anything").getRoot()).toBeNull();
+    expect(new DocumentIndex(MISSING_DIR).getRoot()).toBeNull();
   });
 
   it("indexes nothing when the root directory is missing", () => {
-    const index = new DocumentIndex("/tmp/anything");
+    const index = new DocumentIndex(MISSING_DIR);
     index.refresh(DOCUMENTS_CONFIG);
 
     expect(index.getDocuments()).toEqual([]);
-    expect(index.getRoot()).toBe(path.join("/tmp/anything", "assets/documents"));
+    expect(index.getRoot()).toBe(path.join(MISSING_DIR, "assets/documents"));
   });
 
   it("supports an absolute document root", async () => {
@@ -52,11 +55,11 @@ describe("DocumentIndex", () => {
 
 describe("ImageIndex", () => {
   it("reports no config before refresh", () => {
-    expect(new ImageIndex("/tmp/anything").getConfig()).toBeNull();
+    expect(new ImageIndex(MISSING_DIR).getConfig()).toBeNull();
   });
 
   it("skips originals directories that do not exist", () => {
-    const index = new ImageIndex("/tmp/anything");
+    const index = new ImageIndex(MISSING_DIR);
     index.refresh({ originals: ["does-not-exist"] });
 
     expect(index.getImages()).toEqual([]);
