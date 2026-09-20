@@ -14,6 +14,14 @@
   configuration edge cases; integration tests for `_config.yml` and settings
   reindexing, malformed configuration warnings, and status bar updates
 
+- `.sonarcloud.properties` so SonarCloud AutoScan classifies `test/` as
+  test code (keeps test boilerplate off the production-quality gate) and
+  excludes build artifacts (`out/`, `coverage/`, `.vscode-test/`, `*.vsix`)
+- `.npmrc` `min-release-age=7` so `npm install` only resolves dependency
+  versions published at least 7 days ago, matching the dependabot cooldown
+- `scripts/hooks/pre-commit` git hook (opt-in via
+  `git config core.hooksPath scripts/hooks`) running lint and unit tests
+
 ### Changed
 
 - Deduplicated unit and integration tests to resolve the SonarCloud
@@ -24,6 +32,8 @@
 
 ### Fixed
 
+- Removed `@types/js-yaml`: `js-yaml` v5 bundles its own TypeScript
+  definitions, so the v4 DefinitelyTyped package was stale and redundant
 - `_config.yml` `imgflow.originals` was ignored: the `jekyllImgFlow.originals`
   setting defaults to `null`, which the override check treated as a set value
   and resolved to the default path. Unset (`null`, `undefined`, or empty)

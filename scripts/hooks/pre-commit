@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Pre-commit hook for jekyll-imgflow-vscode.
+#
+# Enable once after cloning:
+#   git config core.hooksPath scripts/hooks
+#
+# Bypass temporarily:
+#   git commit --no-verify
+
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+echo "pre-commit: lint (tsc + ESLint)..."
+npm run lint --silent
+
+echo "pre-commit: unit tests (vitest)..."
+npm test --silent
+
+echo "pre-commit: OK"
