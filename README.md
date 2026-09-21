@@ -5,6 +5,7 @@
 
 ![Jekyll ImgFlow logo](images/logo.png)
 
+[![CI](https://github.com/gundestrup/jekyll-imgflow-vscode/actions/workflows/ci.yml/badge.svg)](https://github.com/gundestrup/jekyll-imgflow-vscode/actions/workflows/ci.yml)
 [![Version](https://img.shields.io/open-vsx/v/gundestrup/jekyll-imgflow)](https://open-vsx.org/extension/gundestrup/jekyll-imgflow)
 [![Installs](https://img.shields.io/open-vsx/dt/gundestrup/jekyll-imgflow)](https://open-vsx.org/extension/gundestrup/jekyll-imgflow)
 [![License](https://img.shields.io/github/license/gundestrup/jekyll-imgflow-vscode)](LICENSE)
