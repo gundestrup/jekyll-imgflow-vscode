@@ -50,6 +50,7 @@
 ## Key Dependencies
 
 - `js-yaml`: Bundled for parsing `_config.yml`
+- `@types/vscode` (dev): Exact pin matching the `engines.vscode` minimum (`1.91.0`); bump only when intentionally raising the supported VS Code floor
 - `vsce` (dev): Packages the extension
 - `ovsx` (used in CI): Publishes to Open VSX
 
