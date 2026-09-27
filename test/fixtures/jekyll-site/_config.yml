@@ -9,3 +9,7 @@ documents:
   category_map:
     Board: minutes
     Annual: yearly
+icon_flow:
+  registry:
+    danger: lucide:triangle-alert:has-text-danger
+    download: lucide:download

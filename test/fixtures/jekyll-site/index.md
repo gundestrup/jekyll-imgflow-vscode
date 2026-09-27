@@ -30,3 +30,13 @@ title: Home
 {% doc_category "research" %}
 
 {% doc_category "uncategorized" %}
+
+{% icon "search" %}
+
+{% icon_lucide "map-pin" size:l %}
+
+{% icon_custom logo %}
+
+{% icon_ref danger %}
+
+{% icon "menu" size:xl %}

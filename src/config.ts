@@ -121,3 +121,23 @@ export function loadAllowedExtensions(
   }
   return DEFAULT_IMAGE_EXTENSIONS;
 }
+
+export interface IconFlowConfig {
+  enabled: boolean;
+  pack: string;
+  customDir: string;
+  registry: Record<string, string>;
+}
+
+const DEFAULT_ICON_PACK = "lucide";
+const DEFAULT_ICON_CUSTOM_DIR = "assets/icons/custom";
+
+export function parseIconFlowConfig(config: JekyllConfig): IconFlowConfig {
+  const iconFlow = asRecord(config.icon_flow);
+  return {
+    enabled: iconFlow?.enabled !== false,
+    pack: typeof iconFlow?.pack === "string" ? iconFlow.pack : DEFAULT_ICON_PACK,
+    customDir: typeof iconFlow?.custom_dir === "string" ? iconFlow.custom_dir : DEFAULT_ICON_CUSTOM_DIR,
+    registry: stringMap(iconFlow?.registry),
+  };
+}

@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { ImgflowCompletionProvider } from "./completionProvider";
 import { DocumentsCompletionProvider } from "./documentsCompletionProvider";
+import { IconsCompletionProvider } from "./iconsCompletionProvider";
 import { WorkspaceIndexes } from "./workspaceIndexes";
 
 const IMG_TAG_PATTERN = /\{%\s*imgflow\s/;
@@ -28,6 +29,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   const provider = new ImgflowCompletionProvider(indexes.images);
   const documentsProvider = new DocumentsCompletionProvider(indexes.documents);
+  const iconsProvider = new IconsCompletionProvider(indexes.icons);
 
   // Also trigger on common image-name characters so the list refines as the user types
   const triggerChars = [
@@ -59,12 +61,24 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     documentsProvider,
     ...triggerChars
   );
+  const markdownIconsProvider = vscode.languages.registerCompletionItemProvider(
+    { language: "markdown" },
+    iconsProvider,
+    ...triggerChars
+  );
+  const liquidIconsProvider = vscode.languages.registerCompletionItemProvider(
+    { language: "liquid", scheme: "file" },
+    iconsProvider,
+    ...triggerChars
+  );
 
   context.subscriptions.push(
     markdownProvider,
     liquidProvider,
     markdownDocumentsProvider,
-    liquidDocumentsProvider
+    liquidDocumentsProvider,
+    markdownIconsProvider,
+    liquidIconsProvider
   );
 
   // Optional: show a status item when inside an imgflow tag

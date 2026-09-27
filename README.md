@@ -14,7 +14,7 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/gundestrup/jekyll-imgflow-vscode/badge)](https://www.codefactor.io/repository/github/gundestrup/jekyll-imgflow-vscode)
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=gundestrup_jekyll-imgflow-vscode&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=gundestrup_jekyll-imgflow-vscode)
 
-A Visual Studio Code companion for [jekyll-imgflow](https://github.com/gundestrup/jekyll-imgflow) and [jekyll-documents](https://github.com/gundestrup/jekyll-documents). It provides autocomplete for ImgFlow images and document references inside Liquid tags in Markdown and Liquid files.
+A Visual Studio Code companion for [jekyll-imgflow](https://github.com/gundestrup/jekyll-imgflow), [jekyll-documents](https://github.com/gundestrup/jekyll-documents), and [jekyll-icon-flow](https://github.com/gundestrup/jekyll-icon-flow). It provides autocomplete for ImgFlow images, document references, and icons inside Liquid tags in Markdown and Liquid files.
 
 ## Installation
 
@@ -26,10 +26,13 @@ code --install-extension jekyll-imgflow-0.1.4.vsix
 
 ## Features
 
-- Auto-discovers ImgFlow and Documents paths from `_config.yml`
+- Auto-discovers ImgFlow, Documents, and Icon Flow paths from `_config.yml`
 - Suggests image names as you type after an `{% imgflow %}` tag
 - Suggests document titles in `{% doc_link %}` and mapped categories in `{% doc_category %}`
 - Inserts exact `path:` references when duplicate document titles or category names need disambiguation
+- Suggests icon names in `{% icon %}`, `{% icon_<pack> %}`, `{% <pack>_icon %}`, and `{% icon_ref %}` tags — the list follows the configured `icon_flow.pack`, the tag's bound pack, and the `icon_flow.registry` keys
+- Completes icon tag parameters: named sizes (`size:xxs`…`size:xxl`, all relative to the text line), `class:`, `title:`, and `pack:` on the generic `{% icon %}` tag
+- Custom icons are indexed live from `icon_flow.custom_dir`; bundled lucide/simple-icons names come from the installed gem (or a built-in list matching the current release)
 - Watches configured source directories and refreshes when files or configuration change
 - Works alongside any Liquid/Jekyll syntax extension
 
@@ -39,9 +42,11 @@ code --install-extension jekyll-imgflow-0.1.4.vsix
 {% imgflow photo.jpg resize width:800 %}
 {% doc_link "Annual Report" %}
 {% doc_category "minutes" %}
+{% icon search size:l %}
+{% icon_ref danger %}
 ```
 
-Place the cursor in the first argument of a supported tag. ImgFlow suggestions come from `imgflow.originals`; document titles and categories come from the configured `documents.root` source tree.
+Place the cursor in the first argument of a supported tag. ImgFlow suggestions come from `imgflow.originals`; document titles and categories come from the configured `documents.root` source tree; icon names come from the installed jekyll-icon-flow packs and `icon_flow.custom_dir`.
 
 ## Configuration
 
@@ -52,7 +57,7 @@ Place the cursor in the first argument of a supported tag. ImgFlow suggestions c
 
 ## Requirements
 
-- A Jekyll site using [jekyll-imgflow](https://github.com/gundestrup/jekyll-imgflow), [jekyll-documents](https://github.com/gundestrup/jekyll-documents), or both
+- A Jekyll site using [jekyll-imgflow](https://github.com/gundestrup/jekyll-imgflow), [jekyll-documents](https://github.com/gundestrup/jekyll-documents), [jekyll-icon-flow](https://github.com/gundestrup/jekyll-icon-flow), or any combination
 - An `_config.yml`; omitted plugin options use the gems' default source paths
 
 ## License

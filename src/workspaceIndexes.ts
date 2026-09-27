@@ -3,14 +3,17 @@ import * as vscode from "vscode";
 import {
   loadJekyllConfigFile,
   parseDocumentsConfig,
+  parseIconFlowConfig,
   resolveImgflowConfig,
 } from "./config";
 import { DocumentIndex } from "./documentIndex";
+import { IconIndex } from "./iconIndex";
 import { ImageIndex } from "./imageIndex";
 
 export class WorkspaceIndexes implements vscode.Disposable {
   readonly images: ImageIndex;
   readonly documents: DocumentIndex;
+  readonly icons: IconIndex;
   private readonly disposables: vscode.Disposable[] = [];
   private rootWatchers: vscode.FileSystemWatcher[] = [];
   private refreshTimer: NodeJS.Timeout | undefined;
@@ -20,6 +23,7 @@ export class WorkspaceIndexes implements vscode.Disposable {
   constructor(private readonly workspaceRoot: string) {
     this.images = new ImageIndex(workspaceRoot);
     this.documents = new DocumentIndex(workspaceRoot);
+    this.icons = new IconIndex(workspaceRoot);
   }
 
   async initialize(): Promise<void> {
@@ -66,20 +70,24 @@ export class WorkspaceIndexes implements vscode.Disposable {
     const formats = vscodeConfig.get<string[] | undefined>("formats");
     const imgflowConfig = resolveImgflowConfig(loaded.config, originals);
     const documentsConfig = parseDocumentsConfig(loaded.config);
+    const iconFlowConfig = parseIconFlowConfig(loaded.config);
 
     this.images.refresh(imgflowConfig, formats);
     this.documents.refresh(documentsConfig);
+    this.icons.refresh(iconFlowConfig);
 
     if (rebuildWatchers) {
       this.rebuildRootWatchers([
         ...imgflowConfig.originals.map((root) => this.resolveRoot(root)),
         this.documents.getRoot(),
+        this.resolveRoot(iconFlowConfig.customDir),
       ]);
     }
 
     console.log(
-      `[Jekyll Autocomplete] indexed ${this.images.getImages().length} images and ` +
-      `${this.documents.getDocuments().length} documents`
+      `[Jekyll Autocomplete] indexed ${this.images.getImages().length} images, ` +
+      `${this.documents.getDocuments().length} documents and ` +
+      `${this.icons.getIcons("lucide").length + this.icons.getIcons("simple").length + this.icons.getIcons("custom").length} icons`
     );
   }
 

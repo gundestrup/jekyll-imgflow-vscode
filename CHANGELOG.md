@@ -4,6 +4,15 @@
 
 ### Added
 
+- jekyll-icon-flow completion support: `{% icon %}`, per-pack
+  `{% icon_<pack> %}`/`{% <pack>_icon %}` aliases, and `{% icon_ref %}`
+  registry keys. Icon names resolve per pack — the configured
+  `icon_flow.pack` for `{% icon %}`, the bound pack for pack-specific tags,
+  live `.svg` files under `icon_flow.custom_dir` for the custom pack, and
+  the bundled lucide/simple-icons lists from the installed gem (with a
+  built-in fallback list). Parameter completions cover the adapter's
+  options: named sizes (`size:xxs`…`size:xxl`), `class:`, `title:`, and
+  `pack:` on the generic tag. Respects `icon_flow.enabled: false`.
 - Codecov coverage reporting: CI runs `npm run test:coverage` (Vitest v8
   coverage, Cobertura XML via `@vitest/coverage-v8`) and
   `npm run test:integration:coverage` (V8 coverage captured from the VS Code

@@ -336,6 +336,66 @@ export function run(): Promise<void> {
       }
     });
 
+    test("suggests bundled pack icon names after {% icon %}", async () => {
+      const completions = await completionsAt("index.md", "{% icon ");
+      const labels = labelsOf(completions);
+
+      assert.ok(labels.includes("search"), `Completions should include search, got: ${labels.join(", ")}`);
+      assert.ok(labels.includes("map-pin"), `Completions should include map-pin`);
+      assert.ok(
+        !labels.includes("logo"),
+        "Default lucide pack should not include the custom logo icon"
+      );
+    });
+
+    test("suggests custom pack icons after {% icon_custom %}", async () => {
+      const completions = await completionsAt("index.md", "{% icon_custom ");
+      const labels = labelsOf(completions);
+
+      assert.ok(labels.includes("logo"), `Completions should include logo, got: ${labels.join(", ")}`);
+      assert.ok(labels.includes("flag"), `Completions should include flag`);
+      assert.ok(!labels.includes("search"), "Custom pack should not include lucide icons");
+    });
+
+    test("suggests registry keys after {% icon_ref %}", async () => {
+      const completions = await completionsAt("index.md", "{% icon_ref ");
+      const labels = labelsOf(completions);
+
+      assert.ok(labels.includes("danger"), `Completions should include danger`);
+      assert.ok(labels.includes("download"), `Completions should include download`);
+
+      const danger = findItem(completions, "danger");
+      assert.ok(
+        danger?.detail?.includes("lucide:triangle-alert"),
+        "Registry completion should show the resolved pack:icon target"
+      );
+    });
+
+    test("suggests named sizes and tag params after the icon name", async () => {
+      const completions = await completionsAt("index.md", "{% icon \"menu\" ");
+      const labels = labelsOf(completions);
+
+      assert.ok(labels.includes("size:l"), `Completions should include size:l`);
+      assert.ok(labels.includes("size:xxs"), `Completions should include size:xxs`);
+      assert.ok(labels.includes("class:"), `Completions should include class:`);
+      assert.ok(labels.includes("title:"), `Completions should include title:`);
+      assert.ok(
+        labels.includes("pack:simple"),
+        "{% icon %} should offer pack: overrides"
+      );
+    });
+
+    test("omits pack: params on pack-bound icon tags", async () => {
+      const completions = await completionsAt("index.md", "{% icon_lucide \"map-pin\" ");
+      const labels = labelsOf(completions);
+
+      assert.ok(labels.includes("size:l"), `Completions should include size:l`);
+      assert.ok(
+        !labels.includes("pack:simple"),
+        "Bound tags should not offer pack: params"
+      );
+    });
+
     test("supports ImgFlow and Documents completions in Liquid files", async () => {
       const imageCompletions = await completionsAt("page.liquid", "{% imgflow ");
       assert.ok(
