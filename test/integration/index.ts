@@ -336,16 +336,13 @@ export function run(): Promise<void> {
       }
     });
 
-    test("suggests bundled pack icon names after {% icon %}", async () => {
+    test("suggests icon names across the {% icon %} search chain", async () => {
       const completions = await completionsAt("index.md", "{% icon ");
       const labels = labelsOf(completions);
 
-      assert.ok(labels.includes("search"), `Completions should include search, got: ${labels.join(", ")}`);
-      assert.ok(labels.includes("map-pin"), `Completions should include map-pin`);
-      assert.ok(
-        !labels.includes("logo"),
-        "Default lucide pack should not include the custom logo icon"
-      );
+      assert.ok(labels.includes("search"), `Completions should include lucide's search`);
+      assert.ok(labels.includes("github"), `Completions should include simple's github`);
+      assert.ok(labels.includes("logo"), `Completions should include the custom logo`);
     });
 
     test("suggests custom pack icons after {% icon_custom %}", async () => {

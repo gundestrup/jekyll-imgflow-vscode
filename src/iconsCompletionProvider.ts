@@ -47,7 +47,7 @@ export class IconsCompletionProvider implements vscode.CompletionItemProvider {
     // Name position: nothing, a partial quoted name, or a bare partial
     const quoted = rest.match(/^\s+(["'])([^"']*)$/);
     if (quoted) {
-      return this.nameCompletions(tag, config.pack, quoted[2] ?? "", quoted[1], position);
+      return this.nameCompletions(tag, quoted[2] ?? "", quoted[1], position);
     }
     const bare = rest.match(/^\s*([^\s%}"']*)$/);
     if (bare) {
@@ -55,7 +55,7 @@ export class IconsCompletionProvider implements vscode.CompletionItemProvider {
       if (VAR_PATH.test(typed)) {
         return [];
       }
-      return this.nameCompletions(tag, config.pack, typed, "", position);
+      return this.nameCompletions(tag, typed, "", position);
     }
 
     // Parameter position: first token complete, cursor in later markup
@@ -73,7 +73,6 @@ export class IconsCompletionProvider implements vscode.CompletionItemProvider {
 
   private nameCompletions(
     tag: string,
-    defaultPack: string,
     typed: string,
     quote: string,
     position: vscode.Position
@@ -95,17 +94,26 @@ export class IconsCompletionProvider implements vscode.CompletionItemProvider {
         });
     }
 
-    const pack = tag === "icon" ? defaultPack : BOUND_PACKS[tag];
-    return this.index.getIcons(pack)
-      .filter((name) => name.startsWith(typed))
-      .map((name) => {
+    // {% icon %} searches the configured chain (or pinned pack); bound
+    // tags complete their own pack only.
+    const packs = tag === "icon" ? this.index.getSearchPacks() : [BOUND_PACKS[tag]];
+    const seen = new Set<string>();
+    const items: vscode.CompletionItem[] = [];
+    for (const pack of packs) {
+      for (const name of this.index.getIcons(pack)) {
+        if (seen.has(name) || !name.startsWith(typed)) {
+          continue;
+        }
+        seen.add(name);
         const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Value);
         item.insertText = name + quote;
         item.range = range;
         item.detail = `icon_flow · ${pack} pack`;
         item.sortText = name;
-        return item;
-      });
+        items.push(item);
+      }
+    }
+    return items;
   }
 
   private paramCompletions(
@@ -122,7 +130,7 @@ export class IconsCompletionProvider implements vscode.CompletionItemProvider {
       { label: "title:", detail: "Accessible label — renders <title> inside the SVG", insertText: new vscode.SnippetString('title:"$1"') },
     ];
     if (tag === "icon") {
-      for (const pack of ["lucide", "simple", "custom"]) {
+      for (const pack of this.index.getPackNames()) {
         candidates.push({ label: `pack:${pack}`, detail: "Render via this pack adapter" });
       }
     }

@@ -124,20 +124,26 @@ export function loadAllowedExtensions(
 
 export interface IconFlowConfig {
   enabled: boolean;
-  pack: string;
+  // null = {% icon %} searches every pack in `search` order
+  pack: string | null;
+  search: string[];
   customDir: string;
+  packs: Record<string, string>;
   registry: Record<string, string>;
 }
 
-const DEFAULT_ICON_PACK = "lucide";
+const DEFAULT_ICON_SEARCH = ["custom", "simple", "lucide"];
 const DEFAULT_ICON_CUSTOM_DIR = "assets/icons/custom";
 
 export function parseIconFlowConfig(config: JekyllConfig): IconFlowConfig {
   const iconFlow = asRecord(config.icon_flow);
+  const search = iconFlow?.search;
   return {
     enabled: iconFlow?.enabled !== false,
-    pack: typeof iconFlow?.pack === "string" ? iconFlow.pack : DEFAULT_ICON_PACK,
+    pack: typeof iconFlow?.pack === "string" ? iconFlow.pack : null,
+    search: stringArray(search, DEFAULT_ICON_SEARCH),
     customDir: typeof iconFlow?.custom_dir === "string" ? iconFlow.custom_dir : DEFAULT_ICON_CUSTOM_DIR,
+    packs: stringMap(iconFlow?.packs),
     registry: stringMap(iconFlow?.registry),
   };
 }

@@ -10,8 +10,10 @@ afterEach(cleanupTempDirs);
 
 const DEFAULT_ICON_CONFIG: IconFlowConfig = {
   enabled: true,
-  pack: "lucide",
+  pack: null,
+  search: ["custom", "simple", "lucide"],
   customDir: "assets/icons/custom",
+  packs: {},
   registry: {},
 };
 
@@ -20,18 +22,22 @@ describe("parseIconFlowConfig", () => {
     expect(parseIconFlowConfig({})).toEqual(DEFAULT_ICON_CONFIG);
   });
 
-  it("reads pack, custom_dir, enabled and the registry map", () => {
+  it("reads pack, search, packs, custom_dir, enabled and the registry map", () => {
     expect(parseIconFlowConfig({
       icon_flow: {
         enabled: false,
         pack: "simple",
+        search: ["fa", "lucide"],
         custom_dir: "icons",
+        packs: { fa: "assets/icons/fa" },
         registry: { danger: "lucide:triangle-alert", download: "lucide:download" },
       },
     })).toEqual({
       enabled: false,
       pack: "simple",
+      search: ["fa", "lucide"],
       customDir: "icons",
+      packs: { fa: "assets/icons/fa" },
       registry: { danger: "lucide:triangle-alert", download: "lucide:download" },
     });
   });
@@ -79,7 +85,22 @@ describe("IconIndex", () => {
     index.refresh(DEFAULT_ICON_CONFIG);
 
     expect(index.getIcons("custom")).toEqual(["logo"]);
-    expect(index.getConfig()?.pack).toBe("lucide");
+    expect(index.getSearchPacks()).toEqual(["custom", "simple", "lucide"]);
+  });
+
+  it("indexes named packs and lets icon_flow.pack pin the search", async () => {
+    const root = await makeTempDir("jekyll-icons-packs-");
+    const faDir = path.join(root, "assets/icons/fa");
+    await mkdir(faDir, { recursive: true });
+    await writeFile(path.join(faDir, "bars.svg"), "<svg/>");
+
+    const index = new IconIndex(root);
+    index.refresh({ ...DEFAULT_ICON_CONFIG, packs: { fa: "assets/icons/fa" } });
+    expect(index.getIcons("fa")).toEqual(["bars"]);
+    expect(index.getPackNames()).toContain("fa");
+
+    index.refresh({ ...DEFAULT_ICON_CONFIG, pack: "fa", packs: { fa: "assets/icons/fa" } });
+    expect(index.getSearchPacks()).toEqual(["fa"]);
   });
 
   it("uses the bundled pack directory when the workspace is the gem repo", async () => {

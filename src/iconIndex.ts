@@ -29,11 +29,30 @@ export class IconIndex {
       : path.join(this.workspaceRoot, config.customDir);
     packs.custom = collectIconNames(customDir);
 
+    for (const [name, dir] of Object.entries(config.packs)) {
+      const resolved = path.isAbsolute(dir) ? dir : path.join(this.workspaceRoot, dir);
+      packs[name] = collectIconNames(resolved);
+    }
+
     this.icons = packs;
   }
 
   getIcons(pack: string): string[] {
     return this.icons[pack] ?? [];
+  }
+
+  // Packs the generic {% icon %} tag resolves, in order: a configured
+  // icon_flow.pack pins to that pack only; otherwise the search chain.
+  getSearchPacks(): string[] {
+    if (!this.config) {
+      return [];
+    }
+    return this.config.pack ? [this.config.pack] : this.config.search;
+  }
+
+  // Every pack name the site could reference, for pack: completions
+  getPackNames(): string[] {
+    return [...BUNDLED_PACKS, "custom", ...Object.keys(this.config?.packs ?? {})];
   }
 
   getRegistry(): Record<string, string> {
