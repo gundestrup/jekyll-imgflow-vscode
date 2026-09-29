@@ -115,6 +115,21 @@ describe("IconIndex", () => {
     expect(index.getIcons("lucide")).toEqual(["only-here"]);
   });
 
+  it("uses a vendored gem pack directory when available", async () => {
+    const root = await makeTempDir("jekyll-icons-vendored-gem-");
+    const lucideDir = path.join(
+      root,
+      "vendor/bundle/ruby/3.3.0/gems/jekyll-icon-flow-1.0.0/assets/icons/lucide"
+    );
+    await mkdir(lucideDir, { recursive: true });
+    await writeFile(path.join(lucideDir, "vendored-only.svg"), "<svg/>");
+
+    const index = new IconIndex(root);
+    index.refresh(DEFAULT_ICON_CONFIG);
+
+    expect(index.getIcons("lucide")).toEqual(["vendored-only"]);
+  });
+
   it("exposes the registry for icon_ref lookups", () => {
     const index = new IconIndex("/nonexistent-workspace");
     index.refresh({ ...DEFAULT_ICON_CONFIG, registry: { danger: "lucide:triangle-alert" } });

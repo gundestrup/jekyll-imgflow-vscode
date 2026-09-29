@@ -1,4 +1,3 @@
-import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { IconFlowConfig } from "./config";
@@ -11,9 +10,6 @@ const GEM_NAME = "jekyll-icon-flow";
 export class IconIndex {
   private icons: Record<string, string[]> = {};
   private config: IconFlowConfig | null = null;
-  // undefined = not resolved yet; null = resolution failed
-  private gemRoot: string | null | undefined;
-
   constructor(private readonly workspaceRoot: string) {}
 
   refresh(config: IconFlowConfig): void {
@@ -65,34 +61,16 @@ export class IconIndex {
 
   private findPackDir(pack: string): string | null {
     // The workspace itself may be the gem repo or a site vendoring it
-    const candidates = [
-      path.join(this.workspaceRoot, "assets", "icons", pack),
-      path.join(this.findVendoredGem() ?? "", "assets", "icons", pack),
-      path.join(this.resolveGemRoot() ?? "", "assets", "icons", pack),
-    ];
+    const candidates = [path.join(this.workspaceRoot, "assets", "icons", pack)];
+    const vendoredGem = this.findVendoredGem();
+    if (vendoredGem) {
+      candidates.push(path.join(vendoredGem, "assets", "icons", pack));
+    }
     return candidates.find((candidate) => isDirectory(candidate)) ?? null;
   }
 
   private findVendoredGem(): string | null {
     return findDirNamed(path.join(this.workspaceRoot, "vendor", "bundle"), GEM_NAME, 5);
-  }
-
-  private resolveGemRoot(): string | null {
-    if (this.gemRoot !== undefined) {
-      return this.gemRoot;
-    }
-    try {
-      const output = execFileSync("bundle", ["show", "jekyll-icon-flow"], {
-        cwd: this.workspaceRoot,
-        encoding: "utf8",
-        timeout: 5000,
-        stdio: ["ignore", "pipe", "ignore"],
-      });
-      this.gemRoot = output.trim() || null;
-    } catch {
-      this.gemRoot = null;
-    }
-    return this.gemRoot;
   }
 }
 

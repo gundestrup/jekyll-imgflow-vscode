@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.2.3] - 2026-09-29
 
 ### Added
 
@@ -9,8 +9,8 @@
   registry keys. Icon names resolve per pack — the configured
   `icon_flow.pack` for `{% icon %}`, the bound pack for pack-specific tags,
   live `.svg` files under `icon_flow.custom_dir` for the custom pack, and
-  the bundled lucide/simple-icons lists from the installed gem (with a
-  built-in fallback list). Parameter completions cover the adapter's
+  bundled lucide/simple icons discovered in workspace or vendored gem files
+  (with built-in fallback lists). Parameter completions cover the adapter's
   options: named sizes (`size:xxs`…`size:xxl`), `class:`, `title:`, and
   `pack:` on the generic tag. Respects `icon_flow.enabled: false`.
 - Codecov coverage reporting: CI runs `npm run test:coverage` (Vitest v8
@@ -22,7 +22,6 @@
 - Unit tests for document filename/date validation, index roots, and
   configuration edge cases; integration tests for `_config.yml` and settings
   reindexing, malformed configuration warnings, and status bar updates
-
 - `.sonarcloud.properties` so SonarCloud AutoScan classifies `test/` as
   test code (keeps test boilerplate off the production-quality gate) and
   excludes build artifacts (`out/`, `coverage/`, `.vscode-test/`, `*.vsix`)
@@ -38,9 +37,16 @@
   `_config.yml` helpers moved to `test/helpers.ts`, repeated config parsing
   cases parameterized with `it.each`, and repeated completion, settings, and
   config-rewrite flows in the integration suite extracted into helpers
+- Updated compatible npm dependencies, including `@types/node` 26.6.2,
+  `@vitest/coverage-v8` 5.0.1, `@vscode/vsce` 4.0.0, ESLint 10.11.0,
+  `markdownlint-cli2` 0.23.3, `typescript-eslint` 8.70.1, and Vitest 5.0.1;
+  refreshed compatible transitive dependencies in the lockfile
 
 ### Fixed
 
+- Removed the `bundle show` subprocess from icon indexing, avoiding
+  PATH-resolved executable invocation while retaining workspace and vendored
+  gem discovery with built-in icon-name fallbacks
 - Removed `@types/js-yaml`: `js-yaml` v5 bundles its own TypeScript
   definitions, so the v4 DefinitelyTyped package was stale and redundant
 - `_config.yml` `imgflow.originals` was ignored: the `jekyllImgFlow.originals`
