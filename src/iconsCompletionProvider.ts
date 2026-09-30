@@ -58,10 +58,14 @@ export class IconsCompletionProvider implements vscode.CompletionItemProvider {
       return this.nameCompletions(tag, typed, "", position);
     }
 
-    // Parameter position: first token complete, cursor in later markup
-    const paramZone = rest.match(/^\s+(?:["'][^"']*["']|[^\s]+)\s+([\s\S]*)$/);
-    if (paramZone) {
-      const tail = paramZone[1] ?? "";
+    // Parameter position: first token complete, cursor in later markup.
+    // Two linear matches (quoted token, then bare token) avoid the
+    // backtracking a single alternation followed by [\s\S]* causes.
+    const paramStart =
+      rest.match(/^\s+["'][^"']*["']\s/) ??
+      rest.match(/^\s+[^\s]+\s/);
+    if (paramStart) {
+      const tail = rest.slice(paramStart[0].length);
       const typed = tail.split(/\s+/).pop() ?? "";
       const startChar = position.character - typed.length;
       const range = new vscode.Range(position.line, startChar, position.line, position.character);
