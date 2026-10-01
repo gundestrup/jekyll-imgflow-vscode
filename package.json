@@ -2,7 +2,7 @@
   "name": "jekyll-imgflow",
   "displayName": "Jekyll ImgFlow",
   "description": "Autocomplete for jekyll-imgflow images, jekyll-documents references, and jekyll-icon-flow icons",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "publisher": "gundestrup",
   "license": "AGPL-3.0-or-later",
   "icon": "images/icon.png",
