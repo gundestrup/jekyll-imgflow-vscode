@@ -52,6 +52,8 @@
 - `js-yaml`: Bundled for parsing `_config.yml`
 - `@types/vscode` (dev): Exact pin matching the `engines.vscode` minimum (`1.91.0`); bump only when intentionally raising the supported VS Code floor
 - `mocha` (dev): Stay on v11 while the compiled Extension Development Host harness uses CommonJS; Mocha 12 is ESM-only
+- `typescript` (dev): Stay on v6 (`^6.0.3`); TypeScript 7 (native, Go-based
+  `tsgo`) is a new major — evaluate deliberately, don't bump in routine sweeps
 - `vsce` (dev): Packages the extension
 - `ovsx` (used in CI): Publishes to Open VSX
 
