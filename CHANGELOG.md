@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.4] - 2026-10-01
+
+### Fixed
+
+- Simplified the icon parameter-zone matching in
+  `iconsCompletionProvider.ts`: replaced a regex whose alternation and
+  `[\s\S]*` tail caused super-linear backtracking (SonarCloud
+  `typescript:S8786`) with two linear matches plus a slice. Completion
+  behavior is unchanged.
+- Updated transitive `serialize-javascript` to 7.1.2, resolving the
+  `</script>` XSS advisory (GHSA-gfhx-hw2g-v5hg)
+
 ## [0.2.3] - 2026-09-29
 
 ### Added
