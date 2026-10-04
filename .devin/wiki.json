@@ -1,0 +1,31 @@
+{
+  "repo_notes": [
+    { "content": "VS Code extension (TypeScript) for Jekyll ImgFlow — editor integration for the jekyll-imgflow gem's image optimization tags. Published to Open VSX, not the VS Code Marketplace." },
+    { "content": "Build: esbuild/tsc compile src/ -> out/; js-yaml is bundled to parse _config.yml (node_modules ships in the VSIX for it)." },
+    { "content": "vsce rejects SVG badge URLs in packaged READMEs — npm run package generates a sanitized README via scripts/prepare-vsix-readme.mjs (single packaging transform; never maintain a second committed README)." },
+    { "content": "Key pins: @types/vscode must match engines.vscode minimum (1.91.0); mocha stays v11 (EDH harness is CJS, mocha 12 is ESM-only); typescript stays v6 (v7/tsgo needs deliberate evaluation). .npmrc min-release-age=7 avoids fresh supply-chain releases." },
+    { "content": "Release: npm version patch -> push v* tag -> publish.yml re-runs integration matrix, packages VSIX, creates GitHub release, publishes to Open VSX (needs OVSX_PAT secret). CHANGELOG entry matching the tag is a hard gate." },
+    { "content": "See AGENTS.md for build commands, test tiers (Vitest unit + @vscode/test-electron integration), and conventions." }
+  ],
+  "pages": [
+    {
+      "title": "Architecture Overview",
+      "purpose": "Extension structure: src/ TypeScript, out/ compiled output, how it reads Jekyll _config.yml via bundled js-yaml, and what the extension provides for imgflow tags",
+      "page_notes": [{ "content": "Include Mermaid diagram: VS Code -> extension host -> src modules -> _config.yml/imgflow tags" }]
+    },
+    {
+      "title": "Testing",
+      "purpose": "Two-tier tests: Vitest unit tests vs @vscode/test-electron Extension Development Host integration tests, V8 coverage capture/remap for both, CI matrix against minimum and stable VS Code",
+      "parent": "Architecture Overview"
+    },
+    {
+      "title": "Packaging",
+      "purpose": "vsce packaging, .vscodeignore contents, bundled node_modules (js-yaml), and the prepare-vsix-readme.mjs sanitized-README transform",
+      "parent": "Architecture Overview"
+    },
+    {
+      "title": "Release and CI",
+      "purpose": "npm version -> v* tag -> publish.yml (integration matrix + VSIX + GitHub release + Open VSX publish), CHANGELOG gate, OVSX_PAT secret, Dependabot cooldown"
+    }
+  ]
+}
