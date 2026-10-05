@@ -1,5 +1,22 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- ImgFlow parameter completions now cover the full tag surface:
+  `aspect_ratio:`, `link:`, `modal:true/false`, and `markup:` output
+  formats (`picture`, `img`, `direct_url`, `naked_srcset`, `data_img`).
+- Document parameter completions after the positional argument:
+  `{% doc_link %}` (`text:`, `icon:false`, `size:false`, `path:`),
+  `{% doc_category %}` (`list:`, `limit:`, `text:`, `path:`,
+  `aggregate:true`), `{% document_icon %}` (expression completion for
+  `page`/`doc`/`include.*` plus `alt:`/`class:`), and
+  `{% latest_documents %}` (`count:`, `category:`).
+- `path:` and `category:` parameter values complete against the
+  workspace index — real document source paths and category names/paths,
+  quoted on insertion.
+
 ## [0.2.4] - 2026-10-01
 
 ### Fixed

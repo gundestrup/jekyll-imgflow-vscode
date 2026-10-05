@@ -35,8 +35,9 @@ const PARAM_COMPLETIONS: ParamCompletion[] = [
   { label: "preset:gallery", insertText: "preset:gallery", detail: "Gallery preset" },
 
   // Crop, watermark and positioning
-  { label: "ratio:1:1", insertText: "ratio:1:1", detail: "Square aspect ratio" },
-  { label: "ratio:16:9", insertText: "ratio:16:9", detail: "Widescreen aspect ratio" },
+  { label: "ratio:1:1", insertText: "ratio:1:1", detail: "Square aspect ratio (crop)" },
+  { label: "ratio:16:9", insertText: "ratio:16:9", detail: "Widescreen aspect ratio (crop)" },
+  { label: "aspect_ratio:16:9", insertText: "aspect_ratio:16:9", detail: "Crop aspect ratio (alias of ratio)" },
   { label: "keep:true", insertText: "keep:true", detail: "Maintain aspect ratio while resizing" },
   { label: "watermark:", insertText: "watermark:", detail: "Path to watermark image" },
   { label: "opacity:0.7", insertText: "opacity:0.7", detail: "Watermark opacity (0.0-1.0)" },
@@ -48,6 +49,16 @@ const PARAM_COMPLETIONS: ParamCompletion[] = [
   { label: "title:", insertText: "title:", detail: "Image title" },
   { label: "loading:lazy", insertText: "loading:lazy", detail: "Lazy load the image" },
   { label: "loading:eager", insertText: "loading:eager", detail: "Eager load the image" },
+
+  // Link, modal zoom and output markup
+  { label: "link:", insertText: "link:", detail: "Wrap the image in an <a> (external URL — no modal zoom)" },
+  { label: "modal:false", insertText: "modal:false", detail: "Disable click-to-zoom for this image" },
+  { label: "modal:true", insertText: "modal:true", detail: "Force click-to-zoom (default: imgflow.image_modal config)" },
+  { label: "markup:picture", insertText: "markup:picture", detail: "Emit a <picture> element" },
+  { label: "markup:img", insertText: "markup:img", detail: "Emit a plain <img> (default)" },
+  { label: "markup:direct_url", insertText: "markup:direct_url", detail: "Emit only the image URL — no element" },
+  { label: "markup:naked_srcset", insertText: "markup:naked_srcset", detail: "Emit only a srcset attribute value" },
+  { label: "markup:data_img", insertText: "markup:data_img", detail: "Emit a lazy-loading data-* <img>" },
 ];
 
 export class ImgflowCompletionProvider implements vscode.CompletionItemProvider {

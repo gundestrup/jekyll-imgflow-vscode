@@ -28,7 +28,9 @@ code --install-extension jekyll-imgflow-0.1.4.vsix
 
 - Auto-discovers ImgFlow, Documents, and Icon Flow paths from `_config.yml`
 - Suggests image names as you type after an `{% imgflow %}` tag
+- Completes ImgFlow parameters: sizes (`width:`/`height:`/`ratio:`/`aspect_ratio:`), formats, `quality:`, `preset:`, crop/watermark options, HTML attributes (`alt:`/`class:`/`title:`/`loading:`), `link:`, `modal:`, and `markup:` output formats
 - Suggests document titles in `{% doc_link %}` and mapped categories in `{% doc_category %}`
+- Completes document tag parameters (`text:`, `icon:`, `size:`, `list:`, `limit:`, `aggregate:`, `path:`) and suggests real document/category paths as `path:`/`category:` values — also covers `{% document_icon %}` (`alt:`/`class:`) and `{% latest_documents %}` (`count:`/`category:`)
 - Inserts exact `path:` references when duplicate document titles or category names need disambiguation
 - Suggests icon names in `{% icon %}`, `{% icon_<pack> %}`, `{% <pack>_icon %}`, and `{% icon_ref %}` tags — the list follows the configured `icon_flow.pack`, the tag's bound pack, and the `icon_flow.registry` keys
 - Completes icon tag parameters: named sizes (`size:xxs`…`size:xxl`, all relative to the text line), `class:`, `title:`, and `pack:` on the generic `{% icon %}` tag

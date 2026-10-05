@@ -10,16 +10,69 @@ interface ArgumentMatch {
   wholeRange: vscode.Range;
 }
 
-type DocTag = "doc_link" | "doc_category";
+type DocTag = "doc_link" | "doc_category" | "document_icon" | "latest_documents";
 
-const QUOTED_PATTERNS: Record<DocTag, RegExp> = {
+interface ParamCompletion {
+  label: string;
+  insertText?: string | vscode.SnippetString;
+  detail: string;
+}
+
+const QUOTED_PATTERNS: Partial<Record<DocTag, RegExp>> = {
   doc_link: /\{%\s*doc_link\s+(["'])([^"']*)(\1)?$/,
   doc_category: /\{%\s*doc_category\s+(["'])([^"']*)(\1)?$/,
 };
 
-const BARE_PATTERNS: Record<DocTag, RegExp> = {
+const BARE_PATTERNS: Partial<Record<DocTag, RegExp>> = {
   doc_link: /\{%\s*doc_link\s+([^\s%}]*)$/,
   doc_category: /\{%\s*doc_category\s+([^\s%}]*)$/,
+  // document_icon takes a Liquid expression (page, doc, include.x), not
+  // a title — complete the common variables instead of document names.
+  document_icon: /\{%\s*document_icon\s+([^\s%}]*)$/,
+};
+
+// Parameter phase: the first argument is complete (closed quote or a
+// bare token followed by whitespace) and the cursor sits in key:value
+// territory. latest_documents has no positional argument — straight
+// to params.
+const PARAM_PATTERNS: Record<DocTag, RegExp> = {
+  doc_link: /\{%\s*doc_link\s+(?:"[^"]*"|'[^']*'|[^\s%}]+)\s+([^%}]*)$/,
+  doc_category: /\{%\s*doc_category\s+(?:"[^"]*"|'[^']*'|[^\s%}]+)\s+([^%}]*)$/,
+  document_icon: /\{%\s*document_icon\s+[^\s%}]+\s+([^%}]*)$/,
+  latest_documents: /\{%\s*latest_documents\s+([^%}]*)$/,
+};
+
+const DOC_ICON_EXPRESSIONS = ["page", "doc", "include.doc", "include.document"];
+
+const PARAM_COMPLETIONS: Record<DocTag, ParamCompletion[]> = {
+  doc_link: [
+    { label: 'text:"…"', insertText: new vscode.SnippetString('text:"$1"'), detail: "Link text (default: document title)" },
+    { label: "icon:false", detail: "Hide the file-type icon" },
+    { label: "size:false", detail: "Hide the file size" },
+    { label: "path:", detail: "Exact source path — disambiguates duplicate titles; completes real paths" },
+  ],
+  doc_category: [
+    { label: "list:true", detail: "Render the category's document list" },
+    { label: "limit:", insertText: new vscode.SnippetString("limit:$1"), detail: "Cap the list at N documents" },
+    { label: 'text:"…"', insertText: new vscode.SnippetString('text:"$1"'), detail: "Link text (default: category name)" },
+    { label: "path:", detail: "Exact category path (e.g. Departments/Europe/Reports); completes real paths" },
+    { label: "aggregate:true", detail: "With list:true — merge repeated short category names" },
+  ],
+  document_icon: [
+    { label: 'alt:"…"', insertText: new vscode.SnippetString('alt:"$1"'), detail: "Alt text (default: '<TYPE> file')" },
+    { label: "class:", insertText: new vscode.SnippetString('class:"$1"'), detail: "CSS class (default: document-file-icon)" },
+  ],
+  latest_documents: [
+    { label: "count:", insertText: new vscode.SnippetString("count:$1"), detail: "How many documents (default: latest_default_count or 5)" },
+    { label: "category:", detail: "Restrict to one category — completes category names" },
+  ],
+};
+
+// Params whose value completes against the workspace index.
+const VALUE_COMPLETION_PARAMS: Partial<Record<DocTag, Record<string, "document" | "category" | "categoryPath">>> = {
+  doc_link: { "path:": "document" },
+  doc_category: { "path:": "categoryPath" },
+  latest_documents: { "category:": "category" },
 };
 
 function argumentMatch(
@@ -27,7 +80,8 @@ function argumentMatch(
   position: vscode.Position,
   tag: DocTag
 ): ArgumentMatch | null {
-  const quoted = textBefore.match(QUOTED_PATTERNS[tag]);
+  const quotedRe = QUOTED_PATTERNS[tag];
+  const quoted = quotedRe ? textBefore.match(quotedRe) : null;
   if (quoted) {
     const typed = quoted[2] ?? "";
     const closeQuotePresent = Boolean(quoted[3]);
@@ -43,7 +97,8 @@ function argumentMatch(
     };
   }
 
-  const bare = textBefore.match(BARE_PATTERNS[tag]);
+  const bareRe = BARE_PATTERNS[tag];
+  const bare = bareRe ? textBefore.match(bareRe) : null;
   if (!bare) {
     return null;
   }
@@ -89,7 +144,97 @@ export class DocumentsCompletionProvider implements vscode.CompletionItemProvide
     if (categoryMatch) {
       return this.categoryCompletions(categoryMatch);
     }
+
+    const iconMatch = argumentMatch(textBefore, position, "document_icon");
+    if (iconMatch) {
+      return this.expressionCompletions(iconMatch);
+    }
+
+    // Parameter phase: key:value after the positional argument (or
+    // immediately for latest_documents, which has none).
+    for (const tag of Object.keys(PARAM_PATTERNS) as DocTag[]) {
+      const match = textBefore.match(PARAM_PATTERNS[tag]);
+      if (match) {
+        return this.paramCompletions(tag, match[1] ?? "", position);
+      }
+    }
     return [];
+  }
+
+  private paramCompletions(
+    tag: DocTag,
+    tail: string,
+    position: vscode.Position
+  ): vscode.CompletionItem[] {
+    const tokens = tail.split(/\s+/);
+    const typed = tokens[tokens.length - 1] ?? "";
+    const range = new vscode.Range(
+      position.line,
+      position.character - typed.length,
+      position.line,
+      position.character
+    );
+
+    // key:value completion — path:/category: resolve real index values
+    const colon = typed.indexOf(":");
+    if (colon > 0) {
+      const key = typed.slice(0, colon + 1);
+      const partial = typed.slice(colon + 1).replace(/^["']/, "");
+      const source = VALUE_COMPLETION_PARAMS[tag]?.[key];
+      if (source) {
+        return this.valueCompletions(key, source, partial, range);
+      }
+    }
+
+    return PARAM_COMPLETIONS[tag]
+      .filter((param) => param.label.toLowerCase().startsWith(typed.toLowerCase()))
+      .map((param) => {
+        const item = new vscode.CompletionItem(param.label, vscode.CompletionItemKind.Property);
+        item.insertText = param.insertText ?? param.label;
+        item.detail = param.detail;
+        item.range = range;
+        item.sortText = param.label.toLowerCase();
+        return item;
+      });
+  }
+
+  private valueCompletions(
+    key: string,
+    source: "document" | "category" | "categoryPath",
+    partial: string,
+    range: vscode.Range
+  ): vscode.CompletionItem[] {
+    const categories = this.index.getCategories();
+    const values = source === "document"
+      ? this.index.getDocuments().map((entry) => entry.sourcePath)
+      : source === "categoryPath"
+        ? categories.map((category) => category.path)
+        : categories.map((category) => category.name);
+
+    return values
+      .filter((value) => value.toLowerCase().startsWith(partial.toLowerCase()))
+      .map((value) => {
+        const item = new vscode.CompletionItem(value, vscode.CompletionItemKind.Value);
+        const quote = value.includes("\"") && !value.includes("'") ? "'" : "\"";
+        item.insertText = `${key}${quote}${value}${quote}`;
+        item.detail = source === "document" ? "Document source path" : "Document category";
+        item.range = range;
+        item.sortText = value.toLowerCase();
+        return item;
+      });
+  }
+
+  private expressionCompletions(match: ArgumentMatch): vscode.CompletionItem[] {
+    return DOC_ICON_EXPRESSIONS
+      .filter((expression) => expression.startsWith(match.typed))
+      .map((expression) => {
+        const item = new vscode.CompletionItem(expression, vscode.CompletionItemKind.Variable);
+        item.insertText = expression;
+        item.detail = "Document expression";
+        item.range = match.range;
+        item.sortText = expression;
+        return item;
+      });
   }
 
   private documentCompletions(match: ArgumentMatch): vscode.CompletionItem[] {

@@ -74,6 +74,11 @@ async function completionsAt(
   return getCompletions(document, findPosition(document, searchText, fromEnd));
 }
 
+async function completionsIn(content: string): Promise<vscode.CompletionList> {
+  const document = await openMarkdownDocument(content);
+  return getCompletions(document, document.positionAt(content.length));
+}
+
 function labelsOf(completions: vscode.CompletionList): string[] {
   return completions.items.map((item) => item.label.toString());
 }
@@ -201,6 +206,18 @@ export function run(): Promise<void> {
       );
     });
 
+    test("suggests link, modal, markup and aspect_ratio imgflow params", async () => {
+      const completions = await completionsAt("index.md", "{% imgflow \"hero.jpg\" ");
+      const labels = labelsOf(completions);
+
+      for (const label of [
+        "link:", "modal:false", "modal:true", "aspect_ratio:16:9",
+        "markup:picture", "markup:img", "markup:direct_url", "markup:naked_srcset",
+      ]) {
+        assert.ok(labels.includes(label), `Completions should include ${label}, got: ${labels.join(", ")}`);
+      }
+    });
+
     test("suggests document titles with metadata after doc_link", async () => {
       const completions = await completionsAt("index.md", "{% doc_link \"Annual");
       const annualReports = itemsLabeled(completions, "Annual Report");
@@ -230,6 +247,61 @@ export function run(): Promise<void> {
 
       assert.ok(minutes, "Mapped minutes category should be suggested");
       assert.equal(minutes.insertText?.toString(), "minutes\"");
+    });
+
+    test("suggests doc_link params after the title", async () => {
+      const completions = await completionsAt("index.md", "{% doc_link \"Annual Report\" ");
+      const labels = labelsOf(completions);
+
+      for (const label of ['text:"…"', "icon:false", "size:false", "path:"]) {
+        assert.ok(labels.includes(label), `Completions should include ${label}, got: ${labels.join(", ")}`);
+      }
+    });
+
+    test("completes real document paths after doc_link path:", async () => {
+      const completions = await completionsIn('{% doc_link "Annual Report" path:');
+      const item = findItem(completions, "Board/2026-03-01_Annual_Report.pdf");
+
+      assert.ok(item, "Real document path should be suggested");
+      assert.equal(item.insertText?.toString(), 'path:"Board/2026-03-01_Annual_Report.pdf"');
+    });
+
+    test("suggests doc_category params including list, limit and aggregate", async () => {
+      const completions = await completionsAt("index.md", "{% doc_category \"minutes\" ");
+      const labels = labelsOf(completions);
+
+      for (const label of ["list:true", "limit:", 'text:"…"', "path:", "aggregate:true"]) {
+        assert.ok(labels.includes(label), `Completions should include ${label}, got: ${labels.join(", ")}`);
+      }
+    });
+
+    test("suggests document_icon expressions then its params", async () => {
+      const expressions = await completionsIn("{% document_icon ");
+      const expressionLabels = labelsOf(expressions);
+
+      assert.ok(expressionLabels.includes("page"), "Should suggest the page variable");
+      assert.ok(expressionLabels.includes("doc"), "Should suggest the doc variable");
+
+      const params = await completionsIn("{% document_icon page ");
+      const paramLabels = labelsOf(params);
+
+      assert.ok(paramLabels.includes('alt:"…"'), "Should suggest alt:");
+      assert.ok(paramLabels.includes("class:"), "Should suggest class:");
+    });
+
+    test("suggests latest_documents params and completes category values", async () => {
+      const params = await completionsIn("{% latest_documents ");
+      const labels = labelsOf(params);
+
+      assert.ok(labels.includes("count:"), "Should suggest count:");
+      assert.ok(labels.includes("category:"), "Should suggest category:");
+
+      const values = await completionsIn("{% latest_documents category:");
+      const valueLabels = labelsOf(values);
+
+      assert.ok(valueLabels.includes("minutes"), `Should complete category names, got: ${valueLabels.join(", ")}`);
+      const item = findItem(values, "minutes");
+      assert.equal(item?.insertText?.toString(), 'category:"minutes"');
     });
 
     test("suggests nested documents using the final mapped category", async () => {
