@@ -4,6 +4,12 @@
 
 ### Added
 
+- `test/parity.test.ts` — vitest parity gate consuming each sibling
+  gem's generated `interface.yml` (`JEKYLL_GEMS_DIR` overridable, skips
+  with a warning when absent): every declared tag/param/enum value must
+  have a completion and no completion may suggest undeclared params;
+  `iconPackNames.ts` is checked against the gem's vendored
+  `assets/icons/<pack>/` listings.
 - ImgFlow parameter completions now cover the full tag surface:
   `aspect_ratio:`, `link:`, `modal:true/false`, and `markup:` output
   formats (`picture`, `img`, `direct_url`, `naked_srcset`, `data_img`).
