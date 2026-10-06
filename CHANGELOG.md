@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- SonarCloud issues: comparator-less `.sort()` in the parity test
+  (S2871) and four alternation+greedy-tail param regexes in
+  `documentsCompletionProvider.ts` rewritten as sequential anchored
+  matches (S8786).
+
+### Security
+
+- Dev-tooling audit gate: `scripts/npm-audit.mjs` + `.audit-allow.json`
+  wired as the `audit` npm script and part of `verify` — patchable
+  transitive deps forced via `overrides` (smol-toml 1.9.0, katex
+  0.18.2); braces (unpatched upstream) and source-map-js (patch pending
+  `min-release-age` quarantine) allowlisted with reason + expiry.
+
 ### Added
 
 - `test/parity.test.ts` — vitest parity gate consuming each sibling

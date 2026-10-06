@@ -86,7 +86,7 @@
     "test:coverage": "vitest run --coverage",
     "test:integration": "npm run compile && tsc -p tsconfig.test.json && node out/test/run-integration.js",
     "test:integration:coverage": "npm run compile && tsc -p tsconfig.test.json && COVERAGE=1 node out/test/run-integration.js && c8 report --temp-directory coverage/tmp-v8 --all --src src --exclude-after-remap --exclude 'test/**' --reporter=cobertura --reporter=text --report-dir coverage/integration",
-    "audit": "npm audit --audit-level=high",
+    "audit": "node scripts/npm-audit.mjs",
     "verify": "npm run lint && npm run test && npm run audit",
     "prepare:vsix-readme": "node scripts/prepare-vsix-readme.mjs",
     "package": "npm run prepare:vsix-readme && vsce package --readme-path .vsix-readme/README.md",
@@ -114,6 +114,7 @@
     "serialize-javascript": "^7.1.0",
     "diff": "^9.0.0",
     "qs": "^6.16.0",
-    "smol-toml": "1.8.0"
+    "smol-toml": "^1.9.0",
+    "katex": "^0.18.2"
   }
 }
