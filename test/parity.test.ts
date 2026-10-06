@@ -154,8 +154,9 @@ describe.skipIf(!manifests["jekyll-icon-flow"])("jekyll-icon-flow parity", () =>
       const vendored = fs.readdirSync(dir)
         .filter((f) => f.endsWith(".svg"))
         .map((f) => f.slice(0, -".svg".length))
-        .sort();
-      expect(BUNDLED_PACK_ICONS[pack]?.sort() ?? [], `${pack} fallback list`).toEqual(vendored);
+        .sort((a, b) => a.localeCompare(b));
+      const fallback = [...(BUNDLED_PACK_ICONS[pack] ?? [])].sort((a, b) => a.localeCompare(b));
+      expect(fallback, `${pack} fallback list`).toEqual(vendored);
     }
   });
 });

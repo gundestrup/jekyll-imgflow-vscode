@@ -34,13 +34,40 @@ const BARE_PATTERNS: Partial<Record<DocTag, RegExp>> = {
 // Parameter phase: the first argument is complete (closed quote or a
 // bare token followed by whitespace) and the cursor sits in key:value
 // territory. latest_documents has no positional argument — straight
-// to params.
-const PARAM_PATTERNS: Record<DocTag, RegExp> = {
-  doc_link: /\{%\s*doc_link\s+(?:"[^"]*"|'[^']*'|[^\s%}]+)\s+([^%}]*)$/,
-  doc_category: /\{%\s*doc_category\s+(?:"[^"]*"|'[^']*'|[^\s%}]+)\s+([^%}]*)$/,
-  document_icon: /\{%\s*document_icon\s+[^\s%}]+\s+([^%}]*)$/,
-  latest_documents: /\{%\s*latest_documents\s+([^%}]*)$/,
+// to params. Sequential anchored matches + slice instead of an
+// alternation with a greedy tail (SonarCloud S8786: no backtracking).
+const TAG_HEADS: Record<DocTag, RegExp> = {
+  doc_link: /\{%\s*doc_link\s+/g,
+  doc_category: /\{%\s*doc_category\s+/g,
+  document_icon: /\{%\s*document_icon\s+/g,
+  latest_documents: /\{%\s*latest_documents\s+/g,
 };
+
+// Everything after the tag's first positional argument and its trailing
+// whitespace; null when that boundary is not crossed or the tail closes
+// the tag. Each {% occurrence is tried in order, matching the original
+// end-anchored regex's leftmost-wins behaviour.
+function paramTail(textBefore: string, tag: DocTag): string | null {
+  for (const head of textBefore.matchAll(TAG_HEADS[tag])) {
+    const rest = textBefore.slice((head.index ?? 0) + head[0].length);
+    const tail = tag === "latest_documents" ? rest : afterFirstArgument(tag, rest);
+    if (tail !== null && !/[%}]/.test(tail)) {
+      return tail;
+    }
+  }
+  return null;
+}
+
+// Consumes the positional argument (closed quote or bare token) plus the
+// whitespace after it; returns the remaining tail, or null when the
+// argument is still being typed.
+function afterFirstArgument(tag: DocTag, rest: string): string | null {
+  const argumentEnd =
+    (tag !== "document_icon"
+      ? rest.match(/^"[^"]*"\s/) ?? rest.match(/^'[^']*'\s/)
+      : null) ?? rest.match(/^[^\s%}]+\s/);
+  return argumentEnd ? rest.slice(argumentEnd[0].length) : null;
+}
 
 const DOC_ICON_EXPRESSIONS = ["page", "doc", "include.doc", "include.document"];
 
@@ -152,10 +179,10 @@ export class DocumentsCompletionProvider implements vscode.CompletionItemProvide
 
     // Parameter phase: key:value after the positional argument (or
     // immediately for latest_documents, which has none).
-    for (const tag of Object.keys(PARAM_PATTERNS) as DocTag[]) {
-      const match = textBefore.match(PARAM_PATTERNS[tag]);
-      if (match) {
-        return this.paramCompletions(tag, match[1] ?? "", position);
+    for (const tag of Object.keys(TAG_HEADS) as DocTag[]) {
+      const tail = paramTail(textBefore, tag);
+      if (tail !== null) {
+        return this.paramCompletions(tag, tail, position);
       }
     }
     return [];
