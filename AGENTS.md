@@ -37,12 +37,12 @@
 - `scripts/`: `prepare-vsix-readme.mjs` packaging transform and `hooks/` git hooks
 - `package.json`: Extension manifest and configuration
 - `tsconfig.json` / `tsconfig.test.json`: Source config (emits `src/` → `out/`) and test config (emits `test/` → `out/test/`); `test/tsconfig.json` is typecheck-only
-- `vitest.config.mts`: Vitest + v8 → cobertura coverage
+- `vitest.config.mts`: Vitest + v8 → cobertura + lcov coverage
 - `eslint.config.mjs`: typescript-eslint flat config
 - `codecov.yml`: Codecov coverage thresholds
 - `.semgrep.yml`: Local Semgrep rules mirroring the App Policies page
 - `.codefactor.yml`: CodeFactor ratings scope and exclusions
-- `.sonarcloud.properties`: SonarCloud AutoScan configuration (classifies `test/` as test code)
+- `sonar-project.properties`: SonarQube Cloud CI-scan configuration (classifies `test/` as test code, imports lcov coverage)
 - `.vscodeignore`: Controls what is bundled into the VSIX
 - `.npmrc`: `min-release-age=7` — only install dependency versions published at least 7 days ago
 - `.devin/config.json`: Devin CLI project permissions (allow-listed commands)

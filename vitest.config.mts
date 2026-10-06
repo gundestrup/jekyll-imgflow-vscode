@@ -6,7 +6,7 @@ export default defineConfig({
     exclude: ["node_modules/**", ".vscode-test/**", "out/**"],
     coverage: {
       provider: "v8",
-      reporter: ["text", "html", "cobertura"],
+      reporter: ["text", "html", "cobertura", "lcov"],
       include: ["src/**/*.ts"],
     },
   },
