@@ -1,7 +1,7 @@
 {
   "repo_notes": [
-    { "content": "VS Code extension (TypeScript) for Jekyll ImgFlow — editor integration for the jekyll-imgflow gem's image optimization tags. Published to Open VSX, not the VS Code Marketplace." },
-    { "content": "Build: esbuild/tsc compile src/ -> out/; js-yaml is bundled to parse _config.yml (node_modules ships in the VSIX for it)." },
+    { "content": "VS Code extension (TypeScript) companion for three Jekyll gems — jekyll-imgflow, jekyll-documents, and jekyll-icon-flow. Registers three completion providers (image names, document references, icon names) for Liquid tags in Markdown and Liquid files. Published to Open VSX, not the VS Code Marketplace." },
+    { "content": "Build: tsc compiles src/ -> out/ (npm run compile; no bundler). js-yaml is a devDependency bundled into the VSIX via .vscodeignore exceptions (!node_modules/js-yaml/**, !node_modules/argparse/**) so config.ts can parse _config.yml at runtime." },
     { "content": "vsce rejects SVG badge URLs in packaged READMEs — npm run package generates a sanitized README via scripts/prepare-vsix-readme.mjs (single packaging transform; never maintain a second committed README)." },
     { "content": "Key pins: @types/vscode must match engines.vscode minimum (1.91.0); mocha stays v11 (EDH harness is CJS, mocha 12 is ESM-only); typescript stays v6 (v7/tsgo needs deliberate evaluation). .npmrc min-release-age=7 avoids fresh supply-chain releases." },
     { "content": "Release: npm version patch -> push v* tag -> publish.yml re-runs integration matrix, packages VSIX, creates GitHub release, publishes to Open VSX (needs OVSX_PAT secret). CHANGELOG entry matching the tag is a hard gate." },
@@ -10,22 +10,38 @@
   "pages": [
     {
       "title": "Architecture Overview",
-      "purpose": "Extension structure: src/ TypeScript, out/ compiled output, how it reads Jekyll _config.yml via bundled js-yaml, and what the extension provides for imgflow tags",
-      "page_notes": [{ "content": "Include Mermaid diagram: VS Code -> extension host -> src modules -> _config.yml/imgflow tags" }]
+      "purpose": "Extension structure: extension.ts activate() builds WorkspaceIndexes, registers Imgflow/Documents/Icons completion providers for markdown and liquid languages with broad trigger characters, plus a status bar item; tsc compiles src/ to out/",
+      "page_notes": [{ "content": "Include Mermaid diagram: VS Code -> extension host -> WorkspaceIndexes (images/documents/icons) -> three completion providers" }]
+    },
+    {
+      "title": "ImgFlow Image Completion",
+      "purpose": "completionProvider.ts: image-name suggestions from imgflow.originals and parameter completion for {% imgflow %} — sizes (width:/height:/ratio:/aspect_ratio:), formats, quality:, preset:, crop/watermark, HTML attributes, link:, modal:, and markup: output formats",
+      "parent": "Architecture Overview"
+    },
+    {
+      "title": "Documents Completion",
+      "purpose": "documentsCompletionProvider.ts: document titles in {% doc_link %}, categories in {% doc_category %}, parameter completion (text:/icon:/size:/list:/limit:/aggregate:/path:/category:), coverage of {% document_icon %} and {% latest_documents %}, and exact path: insertion to disambiguate duplicate titles",
+      "parent": "Architecture Overview"
+    },
+    {
+      "title": "Icons Completion",
+      "purpose": "iconsCompletionProvider.ts + iconPackNames.ts: icon names for {% icon %}, {% icon_<pack> %}, {% <pack>_icon %}, {% icon_ref %}; icon_flow.pack/registry/search resolution, custom_dir live indexing, named sizes xxs..xxl, and class:/title:/pack: parameters",
+      "parent": "Architecture Overview"
+    },
+    {
+      "title": "Indexes and Config Discovery",
+      "purpose": "workspaceIndexes.ts orchestrates imageIndex/documentIndex/iconIndex built from imageFiles/documentFiles/iconFiles collectors via fileCollector.ts; config.ts parses _config.yml with js-yaml (imgflow.originals, documents.root/include_extensions/strict_filename/categories_from_path/category_map, icon_flow.*) and watchers refresh indexes on file/config change; jekyllImgFlow.originals/.formats settings override",
+      "parent": "Architecture Overview"
     },
     {
       "title": "Testing",
-      "purpose": "Two-tier tests: Vitest unit tests vs @vscode/test-electron Extension Development Host integration tests, V8 coverage capture/remap for both, CI matrix against minimum and stable VS Code",
+      "purpose": "Two-tier tests: Vitest unit tests (test/*.test.ts with a Jekyll fixture site) vs @vscode/test-electron Extension Development Host integration tests (test/run-integration.ts), V8 coverage capture/remap for both (c8), CI matrix against minimum and stable VS Code",
       "parent": "Architecture Overview"
     },
     {
-      "title": "Packaging",
-      "purpose": "vsce packaging, .vscodeignore contents, bundled node_modules (js-yaml), and the prepare-vsix-readme.mjs sanitized-README transform",
+      "title": "Packaging, Release, and CI",
+      "purpose": "vsce packaging with .vscodeignore (bundled js-yaml/argparse exceptions), prepare-vsix-readme.mjs sanitized-README transform, npm version -> v* tag -> publish.yml (integration matrix + VSIX + GitHub release + Open VSX publish), CHANGELOG gate, OVSX_PAT secret, Dependabot cooldown",
       "parent": "Architecture Overview"
-    },
-    {
-      "title": "Release and CI",
-      "purpose": "npm version -> v* tag -> publish.yml (integration matrix + VSIX + GitHub release + Open VSX publish), CHANGELOG gate, OVSX_PAT secret, Dependabot cooldown"
     }
   ]
 }
