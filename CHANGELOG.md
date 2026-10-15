@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- SonarCloud `githubactions:S6505` on the release workflow: `ovsx` is
+  now a devDependency invoked via `npm run publish:ovsx` instead of an
+  on-demand `npx` install — also lockfile-pins the publishing CLI.
+
 ## [0.2.5] - 2026-10-15
 
 ### Fixed

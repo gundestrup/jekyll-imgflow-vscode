@@ -86,4 +86,4 @@ jobs:
           echo "✅ CHANGELOG.md has an entry for version ${VERSION}"
 
       - name: Publish to Open VSX
-        run: npx ovsx@1.2.0 publish jekyll-imgflow-*.vsix --trusted-publishing
+        run: npm run publish:ovsx -- jekyll-imgflow-*.vsix --trusted-publishing

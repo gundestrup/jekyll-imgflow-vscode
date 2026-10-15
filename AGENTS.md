@@ -55,7 +55,7 @@
 - `typescript` (dev): Stay on v6 (`^6.0.3`); TypeScript 7 (native, Go-based
   `tsgo`) is a new major — evaluate deliberately, don't bump in routine sweeps
 - `vsce` (dev): Packages the extension
-- `ovsx` (used in CI): Publishes to Open VSX
+- `ovsx` (dev): Publishes to Open VSX via `npm run publish:ovsx` — never `npx ovsx`, which SonarCloud flags (`githubactions:S6505`) for on-demand installs
 
 ## Notes
 

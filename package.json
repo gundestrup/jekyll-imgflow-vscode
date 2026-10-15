@@ -90,6 +90,7 @@
     "verify": "npm run lint && npm run test && npm run audit",
     "prepare:vsix-readme": "node scripts/prepare-vsix-readme.mjs",
     "package": "npm run prepare:vsix-readme && vsce package --readme-path .vsix-readme/README.md",
+    "publish:ovsx": "ovsx publish",
     "semgrep": "semgrep ci --dry-run",
     "semgrep:local": "semgrep scan --config .semgrep.yml --error src/",
     "semgrep:publish": "semgrep publish .semgrep.yml"
@@ -106,6 +107,7 @@
     "js-yaml": "^5.4.3",
     "markdownlint-cli2": "0.23.3",
     "mocha": "^11.8.0",
+    "ovsx": "^1.2.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.71.1",
     "vitest": "^5.0.3"
