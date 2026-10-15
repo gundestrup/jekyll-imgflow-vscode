@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- CI: Semgrep moved from an inline `pip3 install semgrep==1.176.1` pin to hashed `.github/requirements-ci.txt` (compiled from `requirements-ci.in`, Python 3.12), installed with `--require-hashes`. Bumped Semgrep to 1.180.0; the version is now Dependabot-visible via a new `pip` ecosystem entry for `/.github`.
+
 ### Fixed
 
 - SonarCloud `githubactions:S6505` on the release workflow: `ovsx` is
