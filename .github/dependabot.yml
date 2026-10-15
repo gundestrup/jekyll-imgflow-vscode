@@ -13,6 +13,9 @@ updates:
       # Mocha 12 is ESM-only; the compiled EDH harness uses CommonJS.
       - dependency-name: "mocha"
         versions: [">= 12.0.0"]
+      # TypeScript 7 (native tsgo) is a deliberate hold; evaluate separately.
+      - dependency-name: "typescript"
+        versions: [">= 7.0.0"]
 
   - package-ecosystem: github-actions
     directory: /
