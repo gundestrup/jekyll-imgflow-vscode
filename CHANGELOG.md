@@ -8,6 +8,8 @@
 
 ### Fixed
 
+- VSIX packaging no longer includes coverage reports, internal README
+  TODOs, or development/security/engineering-memory configuration.
 - SonarCloud `githubactions:S6505` on the release workflow: `ovsx` is
   now a devDependency invoked via `npm run publish:ovsx` instead of an
   on-demand `npx` install — also lockfile-pins the publishing CLI.

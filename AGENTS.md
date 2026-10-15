@@ -62,7 +62,7 @@
 - CI uses the current Node.js 26 release with `actions/setup-node@v6`; local development should use Node.js 26 as well.
 - `npm run lint` runs both TypeScript compilation and ESLint; `npm run lint:types` runs the TypeScript check alone.
 - `package-lock.json` is not typically included in the VSIX; `node_modules` is bundled because the extension needs `js-yaml`.
-- `.github/` and other development files are excluded from the VSIX by `.vscodeignore`.
+- `.github/`, coverage reports, internal README TODOs, and other development/configuration files are excluded from the VSIX by `.vscodeignore`.
 - `README.md` retains the official DeepWiki SVG badge for automatic refresh. `npm run package` generates a sanitized README under `.vsix-readme/` because `vsce` rejects SVG URLs in packaged READMEs.
 - `scripts/prepare-vsix-readme.mjs` is the single packaging transformation; do not maintain a second committed README.
 - Always use best practices and, when possible, the newest stable version of dependencies.
