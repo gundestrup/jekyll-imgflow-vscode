@@ -142,8 +142,8 @@ aesthetics, this is the zero-risk option. The full rename is cleaner long-term.
 - [ ] Cosmetic: `jekyll-imgflow-`/`jekyll-documents-` temp-dir prefixes
 
 ### CI/CD
-- [ ] `publish.yml`: release title `"Jekyll TagTools ${version}"`, glob `jekyll-tagtools-*.vsix`
-- [ ] `OVSX_PAT` secret unchanged (per-publisher, not per-extension)
+- [ ] `release.yml`: release title `"Jekyll TagTools ${version}"`, glob `jekyll-tagtools-*.vsix`
+- [ ] Open VSX trusted publisher entry must be updated for the renamed repo (it pins owner/repo/workflow filename) — no `OVSX_PAT` secret exists anymore
 
 ### Artwork & docs
 - [ ] `images/logo.png` + `images/icon.png` redesign (current logo says "jekyll-imgflow")
@@ -156,7 +156,7 @@ aesthetics, this is the zero-risk option. The full rename is cleaner long-term.
 - [ ] 2. Rename GitHub repo → `Jekyll-TagTools-vscode` (redirects automatic); update local remote
 - [ ] 3. Apply full rename on `main`, verify (`npm run verify` + `npm run test:integration`)
 - [ ] 4. Release `jekyll-tagtools` **0.3.0** (continue versioning — don't restart at 0.1.0; makes the lineage obvious and avoids confusion with dual-published builds)
-- [ ] 5. Create GitHub release → publish.yml pushes new listing to Open VSX (CHANGELOG gate needs `## [0.3.0]`)
+- [ ] 5. Create GitHub release → release.yml pushes new listing to Open VSX (CHANGELOG gate needs `## [0.3.0]`)
 - [ ] 6. Optional: dual-publish old name during transition window (build legacy VSIX via a name-swap script), then stop
 - [ ] 7. Update service display names (SonarCloud UI, Codecov/CodeFactor/DeepWiki as needed)
 

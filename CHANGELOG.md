@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.2.5] - 2026-10-15
+
 ### Fixed
 
 - SonarCloud issues: comparator-less `.sort()` in the parity test
@@ -11,6 +13,12 @@
 
 ### Security
 
+- Open VSX publishing switched to Trusted Publishing (OIDC): the
+  release workflow (renamed `publish.yml` → `release.yml` to match the
+  gem repos' convention) runs in the `release` environment with
+  `id-token: write`, and `ovsx` 1.2.0 exchanges the ID token for a
+  short-lived publishing token — the stored `OVSX_PAT` is no longer
+  used. Checkouts also set `persist-credentials: false`.
 - Dev-tooling audit gate: `scripts/npm-audit.mjs` + `.audit-allow.json`
   wired as the `audit` npm script and part of `verify` — patchable
   transitive deps forced via `overrides` (smol-toml 1.9.0, katex
@@ -37,6 +45,14 @@
 - `path:` and `category:` parameter values complete against the
   workspace index — real document source paths and category names/paths,
   quoted on insertion.
+
+### Changed
+
+- Dependency updates: `js-yaml` 5.4.3, ESLint 10.12.0,
+  `typescript-eslint` 8.71.1, Vitest/`@vitest/coverage-v8` 5.0.3,
+  `@types/node` 26.6.4; GitHub Actions bumps: `setup-node` 7.1.0,
+  `upload-artifact` 7.0.2, `download-artifact` 8.0.2,
+  `sonarqube-scan-action` 8.3.0.
 
 ## [0.2.4] - 2026-10-01
 

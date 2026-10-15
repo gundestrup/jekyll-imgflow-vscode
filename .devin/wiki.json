@@ -4,7 +4,7 @@
     { "content": "Build: tsc compiles src/ -> out/ (npm run compile; no bundler). js-yaml is a devDependency bundled into the VSIX via .vscodeignore exceptions (!node_modules/js-yaml/**, !node_modules/argparse/**) so config.ts can parse _config.yml at runtime." },
     { "content": "vsce rejects SVG badge URLs in packaged READMEs — npm run package generates a sanitized README via scripts/prepare-vsix-readme.mjs (single packaging transform; never maintain a second committed README)." },
     { "content": "Key pins: @types/vscode must match engines.vscode minimum (1.91.0); mocha stays v11 (EDH harness is CJS, mocha 12 is ESM-only); typescript stays v6 (v7/tsgo needs deliberate evaluation). .npmrc min-release-age=7 avoids fresh supply-chain releases." },
-    { "content": "Release: npm version patch -> push v* tag -> publish.yml re-runs integration matrix, packages VSIX, creates GitHub release, publishes to Open VSX (needs OVSX_PAT secret). CHANGELOG entry matching the tag is a hard gate." },
+    { "content": "Release: npm version patch -> push v* tag -> release.yml re-runs integration matrix, packages VSIX, creates GitHub release, publishes to Open VSX via Trusted Publishing (OIDC id-token, release environment, no stored token). CHANGELOG entry matching the tag is a hard gate." },
     { "content": "See AGENTS.md for build commands, test tiers (Vitest unit + @vscode/test-electron integration), and conventions." }
   ],
   "pages": [
@@ -40,7 +40,7 @@
     },
     {
       "title": "Packaging, Release, and CI",
-      "purpose": "vsce packaging with .vscodeignore (bundled js-yaml/argparse exceptions), prepare-vsix-readme.mjs sanitized-README transform, npm version -> v* tag -> publish.yml (integration matrix + VSIX + GitHub release + Open VSX publish), CHANGELOG gate, OVSX_PAT secret, Dependabot cooldown",
+      "purpose": "vsce packaging with .vscodeignore (bundled js-yaml/argparse exceptions), prepare-vsix-readme.mjs sanitized-README transform, npm version -> v* tag -> release.yml (integration matrix + VSIX + GitHub release + Open VSX publish via Trusted Publishing OIDC), CHANGELOG gate, Dependabot cooldown",
       "parent": "Architecture Overview"
     }
   ]

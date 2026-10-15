@@ -81,7 +81,7 @@ The extension is published to Open VSX, not the VS Code Marketplace.
    git push origin main --follow-tags
    ```
 
-Pushing a `v*` tag triggers `.github/workflows/publish.yml`. It runs integration tests, verifies and packages the extension, creates the GitHub release, and publishes to Open VSX. Before publishing, the workflow verifies that `CHANGELOG.md` contains a `## [<version>]` section matching the tagged version (without the leading `v`); the release fails if the entry is missing. No manual GitHub release or VSIX attachment is needed. The workflow needs an `OVSX_PAT` repository secret.
+Pushing a `v*` tag triggers `.github/workflows/release.yml`. It runs integration tests, verifies and packages the extension, creates the GitHub release, and publishes to Open VSX. Before publishing, the workflow verifies that `CHANGELOG.md` contains a `## [<version>]` section matching the tagged version (without the leading `v`); the release fails if the entry is missing. No manual GitHub release or VSIX attachment is needed. Publishing uses Open VSX Trusted Publishing (OIDC) — the release job runs in the `release` GitHub environment and `ovsx` exchanges the workflow's ID token for a short-lived publishing token, so no `OVSX_PAT` secret is stored.
 
 CI (`.github/workflows/ci.yml`) also runs a non-blocking `npm outdated` check after verification to surface outdated dependencies without failing the build.
 
