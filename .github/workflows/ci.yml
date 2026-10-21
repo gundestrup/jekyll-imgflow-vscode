@@ -39,7 +39,6 @@ jobs:
         with:
           files: coverage/cobertura-coverage.xml
           use_oidc: true
-          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
       - name: Upload unit coverage artifact
@@ -109,7 +108,6 @@ jobs:
         with:
           files: coverage/integration/cobertura-coverage.xml
           use_oidc: true
-          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
       - name: Upload integration coverage artifact
