@@ -34,7 +34,8 @@
 - `test/`: Unit (Vitest) and integration (`@vscode/test-electron` harness + fixture) tests
 - `out/`: Compiled JavaScript output
 - `images/`: Extension icon (`icon.png`) and README logo (`logo.png`)
-- `scripts/`: `prepare-vsix-readme.mjs` packaging transform and `hooks/` git hooks
+- `scripts/`: `prepare-vsix-readme.mjs` packaging transform, `npm-audit.mjs` audit gate, and `hooks/` git hooks
+- `.audit-allow.json`: Expiry-dated allowlist of unpatched upstream advisories consumed by `scripts/npm-audit.mjs`
 - `package.json`: Extension manifest and configuration
 - `tsconfig.json` / `tsconfig.test.json`: Source config (emits `src/` → `out/`) and test config (emits `test/` → `out/test/`); `test/tsconfig.json` is typecheck-only
 - `vitest.config.mts`: Vitest + v8 → cobertura + lcov coverage
@@ -69,3 +70,5 @@
 - Avoid floating/unpinned versions (`latest`, `*`) for CI and new package installs; prefer versions that are at least a week old to avoid freshly-published, unvetted releases. `.npmrc` enforces this via `min-release-age=7` for `npm install` (the lockfile via `npm ci` is unaffected); dependabot applies the same cooldown to update PRs.
 - A git pre-commit hook lives at `scripts/hooks/pre-commit` and runs `npm run lint` plus `npm test`. Enable it once after cloning with `git config core.hooksPath scripts/hooks`; bypass temporarily with `git commit --no-verify`.
 - `js-yaml` bundles its own TypeScript types — do not add `@types/js-yaml`.
+- `overrides` in `package.json` are security floors for vulnerable transitive deps — raise the floor to force a patched version; when upstream is unpatched or the fix is still inside `min-release-age`, allowlist the advisory in `.audit-allow.json` with a reason and expiry instead.
+- Unit coverage enforces a regression floor in `vitest.config.mts` (`coverage.thresholds`) — it is intentionally low because unit tests only target the pure-logic modules; the VS Code-bound files are covered by the integration suite and Codecov merges both reports.

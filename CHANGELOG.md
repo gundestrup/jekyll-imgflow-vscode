@@ -2,9 +2,30 @@
 
 ## [Unreleased]
 
+## [0.2.6] - 2026-10-30
+
+### Security
+
+- Dev dependencies updated: markdownlint-cli2 0.24.0, ESLint 10.13.0,
+  Vitest + @vitest/coverage-v8 5.0.5, js-yaml 5.5.0, ovsx 1.3.0,
+  typescript-eslint 8.72.0.
+- Transitive advisories patched via `overrides`: `re2js@^2.8.8`
+  (GHSA-gg6h-894w-4m9c, quadratic-time DoS in lookbehind matching —
+  introduced by markdownlint 0.42.0's pinned re2js 2.8.6) and the
+  `serialize-javascript` floor raised to `^7.1.3`
+  (GHSA-m5mm-p8h7-m29v, unescaped `</script` in serialized function
+  bodies).
+
 ### Changed
 
-- CI: Semgrep moved from an inline `pip3 install semgrep==1.176.1` pin to hashed `.github/requirements-ci.txt` (compiled from `requirements-ci.in`, Python 3.12), installed with `--require-hashes`. Bumped Semgrep to 1.180.0; the version is now Dependabot-visible via a new `pip` ecosystem entry for `/.github`.
+- CI: Semgrep moved from an inline `pip3 install semgrep==1.176.1` pin
+  to the pinned `semgrep/semgrep` container image (digest-pinned);
+  the short-lived hashed `.github/requirements-ci.txt` approach was
+  dropped, so no pip dependencies are installed in CI.
+- `vitest.config.mts` now enforces a unit-coverage regression floor
+  (lines/statements 30, branches 38, functions 40). Unit tests target
+  the pure-logic modules; the VS Code-bound files are covered by the
+  integration suite and Codecov merges both reports.
 
 ### Fixed
 

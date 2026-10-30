@@ -30,7 +30,7 @@ npm run test:integration:coverage  # integration tests with extension-host cover
 
 Integration tests run against a fixture workspace in `test/fixtures/jekyll-site/`. Override the VS Code version with `VSCODE_VERSION=stable npm run test:integration`.
 
-Coverage uploads to Codecov in CI: the `verify` job sends unit coverage and the `integration` job sends extension-host coverage, which Codecov merges into one report. Thresholds live in `codecov.yml`.
+Coverage uploads to Codecov in CI: the `verify` job sends unit coverage and the `integration` job sends extension-host coverage, which Codecov merges into one report. Thresholds live in `codecov.yml`; `vitest.config.mts` additionally enforces a local unit-coverage regression floor.
 
 ## Packaging
 

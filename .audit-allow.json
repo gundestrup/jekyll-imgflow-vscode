@@ -6,7 +6,7 @@
   },
   "https://github.com/advisories/GHSA-xcx6-jx8p-x3h5": {
     "package": "@azure/msal-node",
-    "reason": "Patched in 7.1.0 but @azure/identity@4 pins ^6.0.0 (all 6.x vulnerable); revisit when a compatible @azure/identity ships. Dev-only transitive dep of @vscode/vsce (ovsx); the Azure AD auth path is only used by `vsce login/publish`, which this project never runs (publishes to Open VSX).",
+    "reason": "Patched in 7.1.0 but @azure/identity@<=4.14.0 pins ^6.0.0 (all 6.x vulnerable). @azure/identity@4.14.1 moves to msal-node ^7.1.0 — unblock with `npm update @azure/identity` once it clears min-release-age (published 2026-10-29). Dev-only transitive dep of @vscode/vsce (ovsx); the Azure AD auth path is only used by `vsce login/publish`, which this project never runs (publishes to Open VSX).",
     "expires": "2027-01-27"
   }
 }
