@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Dev dependencies updated in range: `@types/node` 26.6.6,
+  `@vscode/vsce` 4.1.0, `eslint` 10.14.0, `typescript-eslint` 8.72.1.
+
 ## [0.2.6] - 2026-10-30
 
 ### Security
