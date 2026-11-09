@@ -1,6 +1,22 @@
 # README TODO
 
-## Add a Jekyll ImgFlow demo animation
+## Add a Jekyll ImgFlow demo animation — DONE
+
+Implemented via the same synthetic pipeline as the sibling gem repos
+(`jekyll-documents/scripts/docs-demo.sh`), instead of a manual screen
+recording: `docs/assets/demo.html` renders a mocked VS Code editor
+(dark theme, tab bar, suggestion widget, status bar) parameterized by
+`?demo=<name>&step=<n>`; `scripts/docs-demo.sh` captures four frames per
+demo with headless Chrome at 880×560 and encodes `png` + `avif`
+(libsvtav1) + `webp` (img2webp). Demos: `image-flow`, `document-flow`,
+`icon-flow` (one per supported plugin) and `vscode-flow` (all three in
+one file). Frames are gitignored; regenerate with `sh scripts/docs-demo.sh`.
+README embeds use `<picture>` avif→webp→png with absolute
+raw.githubusercontent.com URLs (docs/ is `.vscodeignore`d, so the images
+are not packaged — the links must resolve on Open VSX).
+
+Previous plan (kept for reference — a real recording may still be useful
+later for a longer-form demo):
 
 Create a short animated demonstration for the README, inspired by the Ruby LSP Open VSX listing. The animation should show one complete workflow rather than every feature:
 
