@@ -19,6 +19,7 @@ eslint.config.mjs
 .vscode-test/
 .ruby-lsp/
 coverage/**
+docs/
 codecov.yml
 sonar-project.properties
 node_modules/**
