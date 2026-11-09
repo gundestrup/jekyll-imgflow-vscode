@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>jekyll-imgflow-vscode demo</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,sans-serif;background:#0d1117;color:#c9d1d9;padding:18px 26px 0}
+  h1{font-size:17px;font-weight:600;color:#e6edf3}
+  h1 .em{color:#7ee787}
+  h2{font-size:12px;font-weight:400;color:#8b949e;margin:3px 0 12px}
+  h2 code{font:11px ui-monospace,"SF Mono",Menlo,monospace;color:#79c0ff}
+
+  .win{border:1px solid #30363d;border-radius:8px;overflow:hidden;background:#1e1e1e;
+       box-shadow:0 8px 24px rgba(0,0,0,.45)}
+  .tabs{display:flex;background:#252526;border-bottom:1px solid #1e1e1e}
+  .tab{font:12px/1 system-ui;padding:9px 14px;color:#969696;border-right:1px solid #1e1e1e;
+       background:#2d2d2d;display:flex;gap:8px;align-items:center}
+  .tab.on{background:#1e1e1e;color:#fff;border-top:2px solid #0078d4;padding-top:7px}
+  .tab .x{color:#7a7a7a;font-size:11px}
+
+  .ed{position:relative;font:13px/22px ui-monospace,"SF Mono",Menlo,monospace;
+      padding:10px 0 14px;min-height:330px}
+  .ln{display:flex;white-space:pre}
+  .no{width:44px;flex:none;text-align:right;padding-right:16px;color:#6e7681;user-select:none}
+  .tx{color:#d4d4d4}
+  .caret{display:inline-block;width:8px;height:17px;background:#aeafad;vertical-align:-3px;
+         animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  /* Liquid / Markdown syntax */
+  .kw{color:#c586c0}   /* {% %} + tag name */
+  .tn{color:#569cd6}   /* tag keyword */
+  .st{color:#ce9178}   /* strings / values */
+  .pa{color:#9cdcfe}   /* params */
+  .hd{color:#569cd6;font-weight:700} /* markdown heading */
+  .cm{color:#6a9955}   /* muted */
+  .tx .plain{color:#d4d4d4}
+
+  /* suggestion widget */
+  .dd{position:absolute;background:#252526;border:1px solid #454545;border-radius:6px;
+      box-shadow:0 6px 16px rgba(0,0,0,.5);min-width:470px;overflow:hidden;z-index:5}
+  .di{display:flex;align-items:center;height:24px;padding:0 10px;gap:9px}
+  .di.sel{background:#094771}
+  .di.sel .lb,.di.sel .dt{color:#fff}
+  .kk{flex:none;width:16px;height:16px;border-radius:3px;font:700 10px/16px system-ui;
+      text-align:center;color:#1e1e1e}
+  .kf{background:#8ab8f5}.kp{background:#c58fff}.kv{background:#7ee787}
+  .kt{background:#63c5c0}.kg{background:#f2cc60}
+  .lb{color:#d4d4d4}
+  .dt{margin-left:auto;color:#969696;font-size:11px;max-width:230px;overflow:hidden;
+      text-overflow:ellipsis;white-space:nowrap}
+
+  .cap{font:11px/1.4 system-ui;color:#8b949e;padding:0 14px 8px}
+  .cap code{color:#79c0ff}
+  .cap svg{vertical-align:-4px;margin:0 2px}
+
+  .bar{display:flex;justify-content:space-between;background:#007acc;color:#fff;
+       font:11px/22px system-ui;padding:0 12px}
+</style>
+</head>
+<body>
+<h1 id="t"></h1>
+<h2 id="s"></h2>
+<div class="win">
+  <div class="tabs">
+    <div class="tab on">index.md<span class="x">×</span></div>
+    <div class="tab">page.liquid</div>
+  </div>
+  <div class="ed" id="ed"></div>
+  <div class="cap" id="cap"></div>
+  <div class="bar"><span id="barl">main&nbsp;&nbsp;Markdown</span><span id="barr">ImgFlow</span></div>
+</div>
+<script>
+const CARET = '<span class="caret"></span>';
+const LQ = '<span class="kw">{%</span>';
+const RQ = '<span class="kw">%}</span>';
+
+const SCENES = {
+  "image-flow": {
+    title: '<span class="em">jekyll-imgflow</span> · VS Code',
+    sub: 'Filename and parameter autocomplete inside <code>{% imgflow %}</code>',
+    frames: [
+      {
+        lines: [
+          '<span class="hd"># Post: Summer launch</span>', '',
+          LQ + ' <span class="tn">imgflow</span> ' + CARET, '',
+          '<span class="cm">Draft body…</span>'
+        ],
+        dd: { at: 2, sel: 0, items: [
+          ["kf","hero.jpg","originals"], ["kf","photo.png","originals"],
+          ["kf","diagram.webp","originals"], ["kf","thumbnail.gif","originals"],
+          ["kf","icon.svg","originals"], ["kf","nested/landscape.jpeg","originals"]
+        ]},
+        bar: "↻ ImgFlow ready"
+      },
+      {
+        lines: [
+          '<span class="hd"># Post: Summer launch</span>', '',
+          LQ + ' <span class="tn">imgflow</span> <span class="st">hero.jpg</span> ' + CARET, '',
+          '<span class="cm">Draft body…</span>'
+        ],
+        dd: { at: 2, sel: 1, items: [
+          ["kp","width:400","Default size sm (400px)"], ["kp","width:800","Default size md (800px)"],
+          ["kp","format:webp","Output as WebP"], ["kp","format:avif","Output as AVIF"],
+          ["kp","preset:hero","Hero image preset"], ["kp","ratio:16:9","Widescreen crop"]
+        ]},
+        bar: "↻ ImgFlow ready"
+      },
+      {
+        lines: [
+          '<span class="hd"># Post: Summer launch</span>', '',
+          LQ + ' <span class="tn">imgflow</span> <span class="st">hero.jpg</span> <span class="pa">width:800</span> ' + CARET, '',
+          '<span class="cm">Draft body…</span>'
+        ],
+        dd: { at: 2, sel: 0, items: [
+          ["kp","markup:picture","Emit a &lt;picture&gt; element"], ["kp","markup:img","Plain &lt;img&gt; (default)"],
+          ["kp","link:","Wrap in &lt;a&gt; — no modal zoom"], ["kp","modal:true","Force click-to-zoom"],
+          ["kp","alt:","Image alt text"], ["kp","loading:lazy","Lazy load"]
+        ]},
+        bar: "↻ ImgFlow ready"
+      },
+      {
+        lines: [
+          '<span class="hd"># Post: Summer launch</span>', '',
+          LQ + ' <span class="tn">imgflow</span> <span class="st">hero.jpg</span> <span class="pa">width:800</span> <span class="pa">markup:picture</span> ' + RQ, '',
+          '<span class="cm">Draft body…</span>'
+        ],
+        cap: '→ renders a <code>&lt;picture&gt;</code> with AVIF · WebP · JPEG fallback',
+        bar: "ImgFlow"
+      }
+    ]
+  },
+
+  "document-flow": {
+    title: '<span class="em">jekyll-documents</span> · VS Code',
+    sub: 'Title, category and <code>path:</code> autocomplete inside <code>{% doc_link %}</code> / <code>{% doc_category %}</code>',
+    frames: [
+      {
+        lines: [
+          '<span class="hd"># Meeting archive</span>', '',
+          LQ + ' <span class="tn">doc_link</span> <span class="st">"' + CARET, '',
+          '<span class="cm">…</span>'
+        ],
+        dd: { at: 2, sel: 2, items: [
+          ["kt","Board Minutes","Board"], ["kt","Annual Report","Board"],
+          ["kt","Annual Report","Reports"], ["kt","Regional Research","Departments/Europe"],
+          ["kt","Year End Accounts","Archive/Annual"], ["kt","Root Policy","documents root"]
+        ]}
+      },
+      {
+        lines: [
+          '<span class="hd"># Meeting archive</span>', '',
+          LQ + ' <span class="tn">doc_link</span> <span class="st">"Annual Report"</span> ' + CARET, '',
+          '<span class="cm">…</span>'
+        ],
+        dd: { at: 2, sel: 1, items: [
+          ["kp",'text:"…"',"Link text (default: title)"], ["kp","path:","Exact source path — disambiguates"],
+          ["kp","icon:false","Hide the file-type icon"], ["kp","size:false","Hide the file size"]
+        ]}
+      },
+      {
+        lines: [
+          '<span class="hd"># Meeting archive</span>', '',
+          LQ + ' <span class="tn">doc_link</span> <span class="pa">path:</span>' + CARET, '',
+          '<span class="cm">…</span>'
+        ],
+        dd: { at: 2, sel: 1, items: [
+          ["kv","Board/2026-03-01_Annual_Report.pdf","exact source path"],
+          ["kv","Reports/2026-03-02_Annual_Report.pdf","exact source path"]
+        ]}
+      },
+      {
+        lines: [
+          '<span class="hd"># Meeting archive</span>', '',
+          LQ + ' <span class="tn">doc_link</span> <span class="pa">path:</span><span class="st">Reports/2026-03-02_Annual_Report.pdf</span> ' + RQ, '',
+          '<span class="cm">…</span>'
+        ],
+        cap: '→ duplicate titles resolved — <code>path:</code> links the exact document'
+      }
+    ]
+  },
+
+  "icon-flow": {
+    title: '<span class="em">jekyll-icon-flow</span> · VS Code',
+    sub: 'Tag, icon name and parameter autocomplete inside <code>{% icon_* %}</code>',
+    frames: [
+      {
+        lines: [
+          '<span class="hd"># Footer links</span>', '',
+          LQ + ' <span class="tn">icon_</span>' + CARET, '',
+          '<span class="cm">…</span>'
+        ],
+        dd: { at: 2, sel: 0, items: [
+          ["kg","icon_lucide","icon_flow · lucide pack"], ["kg","icon_simple","icon_flow · simple pack"],
+          ["kg","icon_custom","icon_flow · custom_dir"], ["kg","icon_ref","icon_flow · registry keys"]
+        ]}
+      },
+      {
+        lines: [
+          '<span class="hd"># Footer links</span>', '',
+          LQ + ' <span class="tn">icon_lucide</span> ' + CARET, '',
+          '<span class="cm">…</span>'
+        ],
+        dd: { at: 2, sel: 0, items: [
+          ["kg","search","icon_flow · lucide pack"], ["kg","file-text","icon_flow · lucide pack"],
+          ["kg","download","icon_flow · lucide pack"], ["kg","calendar","icon_flow · lucide pack"],
+          ["kg","check","icon_flow · lucide pack"], ["kg","folder","icon_flow · lucide pack"]
+        ]}
+      },
+      {
+        lines: [
+          '<span class="hd"># Footer links</span>', '',
+          LQ + ' <span class="tn">icon_lucide</span> <span class="st">search</span> ' + CARET, '',
+          '<span class="cm">…</span>'
+        ],
+        dd: { at: 2, sel: 1, items: [
+          ["kp","size:xs","Named size · 0.75em"], ["kp","size:l","Named size · 1.25em"],
+          ["kp","size:","Custom CSS size — e.g. 1.5em"], ["kp",'class:"…"',"Classes merged onto the &lt;svg&gt;"],
+          ["kp",'title:"…"',"Accessible &lt;title&gt; in the SVG"]
+        ]}
+      },
+      {
+        lines: [
+          '<span class="hd"># Footer links</span>', '',
+          LQ + ' <span class="tn">icon_lucide</span> <span class="st">search</span> <span class="pa">size:l</span> ' + RQ, '',
+          '<span class="cm">…</span>'
+        ],
+        cap: '→ inline <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7ee787" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> at 1.25em — crisp at any size',
+      }
+    ]
+  },
+
+  "vscode-flow": {
+    title: '<span class="em">jekyll-imgflow-vscode</span>',
+    sub: 'One companion extension — autocomplete for <code>imgflow</code> · <code>documents</code> · <code>icon-flow</code>',
+    frames: [
+      {
+        lines: [
+          '<span class="hd"># Launch notes</span>', '',
+          LQ + ' <span class="tn">imgflow</span> ' + CARET, '', '', '', ''
+        ],
+        dd: { at: 2, sel: 0, items: [
+          ["kf","hero.jpg","originals"], ["kf","photo.png","originals"],
+          ["kf","diagram.webp","originals"], ["kf","thumbnail.gif","originals"],
+          ["kf","nested/landscape.jpeg","originals"]
+        ]},
+        bar: "↻ ImgFlow ready"
+      },
+      {
+        lines: [
+          '<span class="hd"># Launch notes</span>', '',
+          LQ + ' <span class="tn">imgflow</span> <span class="st">hero.jpg</span> <span class="pa">format:webp</span> ' + RQ, '',
+          LQ + ' <span class="tn">icon_lucide</span> ' + CARET, '', ''
+        ],
+        dd: { at: 4, sel: 0, items: [
+          ["kg","search","icon_flow · lucide pack"], ["kg","file-text","icon_flow · lucide pack"],
+          ["kg","download","icon_flow · lucide pack"], ["kg","calendar","icon_flow · lucide pack"],
+          ["kg","check","icon_flow · lucide pack"]
+        ]},
+        bar: "ImgFlow"
+      },
+      {
+        lines: [
+          '<span class="hd"># Launch notes</span>', '',
+          LQ + ' <span class="tn">imgflow</span> <span class="st">hero.jpg</span> <span class="pa">format:webp</span> ' + RQ, '',
+          LQ + ' <span class="tn">icon_lucide</span> <span class="st">search</span> ' + RQ, '',
+          LQ + ' <span class="tn">doc_link</span> <span class="st">"' + CARET
+        ],
+        dd: { at: 6, sel: 0, items: [
+          ["kt","Board Minutes","Board"], ["kt","Annual Report","Board"],
+          ["kt","Annual Report","Reports"], ["kt","Regional Research","Departments/Europe"],
+          ["kt","Year End Accounts","Archive/Annual"]
+        ]},
+        bar: "ImgFlow"
+      },
+      {
+        lines: [
+          '<span class="hd"># Launch notes</span>', '',
+          LQ + ' <span class="tn">imgflow</span> <span class="st">hero.jpg</span> <span class="pa">format:webp</span> ' + RQ, '',
+          LQ + ' <span class="tn">icon_lucide</span> <span class="st">search</span> ' + RQ, '',
+          LQ + ' <span class="tn">doc_link</span> <span class="st">"Board Minutes"</span> ' + RQ
+        ],
+        cap: 'three plugins · one extension · same completion muscle memory',
+        bar: "ImgFlow"
+      }
+    ]
+  }
+};
+
+const q = new URLSearchParams(location.search);
+const scene = SCENES[q.get("demo")] || SCENES["vscode-flow"];
+const frame = scene.frames[+q.get("step") || 0];
+
+document.getElementById("t").innerHTML = scene.title;
+document.getElementById("s").innerHTML = scene.sub;
+
+const ed = document.getElementById("ed");
+frame.lines.forEach((html, i) => {
+  const ln = document.createElement("div");
+  ln.className = "ln";
+  ln.innerHTML = `<span class="no">${i + 1}</span><span class="tx">${html}</span>`;
+  ed.appendChild(ln);
+});
+
+if (frame.dd) {
+  const dd = document.createElement("div");
+  dd.className = "dd";
+  dd.style.top = (10 + (frame.dd.at + 1) * 22) + "px";
+  dd.style.left = "60px";
+  dd.innerHTML = frame.dd.items.map((it, i) =>
+    `<div class="di${i === frame.dd.sel ? " sel" : ""}">` +
+    `<span class="kk ${it[0]}">${it[0].slice(1).toUpperCase()}</span>` +
+    `<span class="lb">${it[1]}</span><span class="dt">${it[2]}</span></div>`
+  ).join("");
+  ed.appendChild(dd);
+}
+
+document.getElementById("cap").innerHTML = frame.cap || "&nbsp;";
+document.getElementById("barr").textContent = frame.bar || "ImgFlow";
+</script>
+</body>
+</html>
