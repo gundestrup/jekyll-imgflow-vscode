@@ -16,6 +16,17 @@
 
 A Visual Studio Code companion for [jekyll-imgflow](https://github.com/gundestrup/jekyll-imgflow), [jekyll-documents](https://github.com/gundestrup/jekyll-documents), and [jekyll-icon-flow](https://github.com/gundestrup/jekyll-icon-flow). It provides autocomplete for ImgFlow images, document references, and icons inside Liquid tags in Markdown and Liquid files.
 
+<picture>
+  <source
+    srcset="https://raw.githubusercontent.com/gundestrup/jekyll-imgflow-vscode/main/docs/assets/vscode-flow.avif"
+    type="image/avif">
+  <source
+    srcset="https://raw.githubusercontent.com/gundestrup/jekyll-imgflow-vscode/main/docs/assets/vscode-flow.webp"
+    type="image/webp">
+  <img src="https://raw.githubusercontent.com/gundestrup/jekyll-imgflow-vscode/main/docs/assets/vscode-flow.png"
+       alt="Autocomplete demo: an imgflow image tag, an icon tag, and a doc_link completed in one file">
+</picture>
+
 ## Installation
 
 Install from [Open VSX](https://open-vsx.org/extension/gundestrup/jekyll-imgflow) (for [VSCodium](https://vscodium.com/) or any Open VSX-compatible editor) or download the latest `.vsix` from [GitHub Releases](https://github.com/gundestrup/jekyll-imgflow-vscode/releases) and run:
@@ -37,6 +48,49 @@ code --install-extension jekyll-imgflow-0.1.4.vsix
 - Custom icons are indexed live from `icon_flow.custom_dir`; bundled lucide/simple-icons names come from the installed gem (or a built-in list matching the current release)
 - Watches configured source directories and refreshes when files or configuration change
 - Works alongside any Liquid/Jekyll syntax extension
+
+## Demos
+
+One animation per supported plugin — the completion list always follows the tag in use.
+
+**Images — [jekyll-imgflow](https://github.com/gundestrup/jekyll-imgflow)**
+
+<picture>
+  <source
+    srcset="https://raw.githubusercontent.com/gundestrup/jekyll-imgflow-vscode/main/docs/assets/image-flow.avif"
+    type="image/avif">
+  <source
+    srcset="https://raw.githubusercontent.com/gundestrup/jekyll-imgflow-vscode/main/docs/assets/image-flow.webp"
+    type="image/webp">
+  <img src="https://raw.githubusercontent.com/gundestrup/jekyll-imgflow-vscode/main/docs/assets/image-flow.png"
+       alt="ImgFlow autocomplete: image filenames, then width/format/markup parameters">
+</picture>
+
+**Documents — [jekyll-documents](https://github.com/gundestrup/jekyll-documents)**
+
+<picture>
+  <source
+    srcset="https://raw.githubusercontent.com/gundestrup/jekyll-imgflow-vscode/main/docs/assets/document-flow.avif"
+    type="image/avif">
+  <source
+    srcset="https://raw.githubusercontent.com/gundestrup/jekyll-imgflow-vscode/main/docs/assets/document-flow.webp"
+    type="image/webp">
+  <img src="https://raw.githubusercontent.com/gundestrup/jekyll-imgflow-vscode/main/docs/assets/document-flow.png"
+       alt="Documents autocomplete: document titles with categories, parameters, exact path: disambiguation">
+</picture>
+
+**Icons — [jekyll-icon-flow](https://github.com/gundestrup/jekyll-icon-flow)**
+
+<picture>
+  <source
+    srcset="https://raw.githubusercontent.com/gundestrup/jekyll-imgflow-vscode/main/docs/assets/icon-flow.avif"
+    type="image/avif">
+  <source
+    srcset="https://raw.githubusercontent.com/gundestrup/jekyll-imgflow-vscode/main/docs/assets/icon-flow.webp"
+    type="image/webp">
+  <img src="https://raw.githubusercontent.com/gundestrup/jekyll-imgflow-vscode/main/docs/assets/icon-flow.png"
+       alt="Icon autocomplete: icon_* tags, lucide icon names, named sizes and parameters">
+</picture>
 
 ## Usage
 

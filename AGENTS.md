@@ -34,7 +34,8 @@
 - `test/`: Unit (Vitest) and integration (`@vscode/test-electron` harness + fixture) tests
 - `out/`: Compiled JavaScript output
 - `images/`: Extension icon (`icon.png`) and README logo (`logo.png`)
-- `scripts/`: `prepare-vsix-readme.mjs` packaging transform, `npm-audit.mjs` audit gate, and `hooks/` git hooks
+- `scripts/`: `prepare-vsix-readme.mjs` packaging transform, `npm-audit.mjs` audit gate, `docs-demo.sh` README animation captures, and `hooks/` git hooks
+- `docs/assets/`: `demo.html` (mock VS Code editor, `?demo=<name>&step=<n>`) + generated `image-flow`/`document-flow`/`icon-flow`/`vscode-flow` demo captures referenced by README via absolute raw.githubusercontent URLs; regenerate with `sh scripts/docs-demo.sh` (needs Chrome, ffmpeg+libsvtav1, img2webp). `frames/` intermediates are gitignored and `docs/` is `.vscodeignore`d
 - `.audit-allow.json`: Expiry-dated allowlist of unpatched upstream advisories consumed by `scripts/npm-audit.mjs`
 - `package.json`: Extension manifest and configuration
 - `tsconfig.json` / `tsconfig.test.json`: Source config (emits `src/` → `out/`) and test config (emits `test/` → `out/test/`); `test/tsconfig.json` is typecheck-only
