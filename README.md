@@ -1,4 +1,6 @@
-# Jekyll ImgFlow — VS Code companion
+<!-- markdownlint-disable MD013 MD033 -->
+# Jekyll ImgFlow — VS Code companion <a href="https://gundestrup.github.io/flow/"><img align="right" src="https://gundestrup.github.io/flow/assets/badges/part-of-flow.svg?v=2" alt="Part of Flow software" height="40"></a>
+<!-- markdownlint-enable MD013 MD033 -->
 
 [![codecov](https://codecov.io/gh/gundestrup/jekyll-imgflow-vscode/branch/main/graph/badge.svg)](https://codecov.io/gh/gundestrup/jekyll-imgflow-vscode)
 
