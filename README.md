@@ -9,7 +9,7 @@
 [![Version](https://img.shields.io/open-vsx/v/gundestrup/jekyll-imgflow)](https://open-vsx.org/extension/gundestrup/jekyll-imgflow)
 [![Installs](https://img.shields.io/open-vsx/dt/gundestrup/jekyll-imgflow)](https://open-vsx.org/extension/gundestrup/jekyll-imgflow)
 [![License](https://img.shields.io/github/license/gundestrup/jekyll-imgflow-vscode)](LICENSE)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/gundestrup/jekyll-imgflow-vscode)
+[<img src="https://devin.ai/assets/askdeepwiki.png" alt="Ask DeepWiki" height="20"/>](https://deepwiki.com/gundestrup/jekyll-imgflow-vscode)
 [![Semgrep](https://img.shields.io/badge/SAST-Semgrep-blue)](https://github.com/gundestrup/jekyll-imgflow-vscode/actions/workflows/ci.yml)
 [![CodeFactor](https://www.codefactor.io/repository/github/gundestrup/jekyll-imgflow-vscode/badge)](https://www.codefactor.io/repository/github/gundestrup/jekyll-imgflow-vscode)
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=gundestrup_jekyll-imgflow-vscode&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=gundestrup_jekyll-imgflow-vscode)
