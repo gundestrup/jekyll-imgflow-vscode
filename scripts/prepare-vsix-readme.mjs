@@ -8,7 +8,12 @@ const officialBadge = "https://deepwiki.com/badge.svg";
 const packageBadge = "https://img.shields.io/badge/Ask%20DeepWiki-DeepWiki-5b21b6";
 
 const readme = await readFile(sourcePath, "utf8");
-const packageReadme = readme.replaceAll(officialBadge, packageBadge);
+const packageReadme = readme
+  .replaceAll(officialBadge, packageBadge)
+  .replace(
+    /<a href="https:\/\/gundestrup\.github\.io\/flow\/"><img[^>]*><\/a>/,
+    "[Part of Flow software](https://gundestrup.github.io/flow/)",
+  );
 
 await mkdir(dirname(outputPath), { recursive: true });
 await writeFile(outputPath, packageReadme);
