@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Changed
+
+- npm dev-deps: `eslint` 10.14.0 → 10.15.0, `typescript-eslint` 8.72.2 →
+  8.73.0, `@vscode/vsce` 4.0.0 → 4.1.1 (`min-release-age=7` filtered the
+  fresh releases: `markdownlint-cli2` 0.24.2, `vitest` 5.1.1,
+  `typescript-eslint` 8.74.0 — eligible for the next sweep).
+
 ## [0.2.7] - 2026-11-09
 
 ### Added
